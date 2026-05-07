@@ -24,6 +24,24 @@
             text-align: center; 
         }
         h2 { color: #333; margin-bottom: 1.5rem; }
+        
+        .settings-row {
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select {
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+        }
+
         .controls { 
             margin-bottom: 1.5rem; 
             display: flex; 
@@ -47,8 +65,6 @@
         #clear-btn { background-color: #6c757d; }
         
         button:hover { opacity: 0.9; transform: translateY(-1px); }
-        button:active { transform: translateY(0); }
-        
         button.listening { 
             background-color: #dc3545; 
             animation: pulse 1.5s infinite; 
@@ -67,7 +83,6 @@
             resize: vertical;
         }
 
-        /* Verification Box */
         #verify-box { 
             display: none; 
             margin-top: 20px; 
@@ -77,7 +92,6 @@
             background: #e7f1ff; 
             text-align: center; 
         }
-        #number-display { margin: 15px 0; }
         .num-tag { 
             display: inline-block; 
             background: #007bff; 
@@ -87,7 +101,6 @@
             border-radius: 6px; 
             font-weight: bold; 
             font-size: 1.2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .choice-btns { 
             margin-top: 20px; 
@@ -109,6 +122,22 @@
 
 <div class="container">
     <h2>Lottery Speech Analyzer</h2>
+    
+    <!-- Language Selection Dropdown -->
+    <div class="settings-row">
+        <label for="lang-select">Language:</label>
+        <select id="lang-select">
+            <option value="en-US">English</option>
+            <option value="pt-BR">Portuguese</option>
+            <option value="fr-FR">French</option>
+            <option value="es-ES">Spanish</option>
+            <option value="it-IT">Italian</option>
+            <option value="de-DE">German</option>
+            <option value="ko-KR">Korean</option>
+            <option value="zh-CN">Chinese (Mandarin)</option>
+        </select>
+    </div>
+
     <div class="controls">
         <button id="start-btn">Start Listening</button>
         <button id="analyze-btn">Analyze Speech</button>
@@ -117,7 +146,6 @@
     
     <textarea id="output-text" placeholder="Speak your lottery numbers..."></textarea>
 
-    <!-- Verification Section -->
     <div id="verify-box">
         <p style="font-weight: 600; color: #0056b3;">I recognized these numbers. Are they correct?</p>
         <div id="number-display"></div>
@@ -129,7 +157,7 @@
 </div>
 
 <script>
-const startBtn = document.getElementById('start-btn');
+    const startBtn = document.getElementById('start-btn');
     const analyzeBtn = document.getElementById('analyze-btn');
     const clearBtn = document.getElementById('clear-btn');
     const outputText = document.getElementById('output-text');
@@ -137,6 +165,7 @@ const startBtn = document.getElementById('start-btn');
     const numberDisplay = document.getElementById('number-display');
     const yesBtn = document.getElementById('yes-btn');
     const noBtn = document.getElementById('no-btn');
+    const langSelect = document.getElementById('lang-select');
 
     let recognizedNumbers = [];
     let finalTranscript = ''; 
@@ -146,13 +175,24 @@ const startBtn = document.getElementById('start-btn');
 
     recognition.continuous = true;
     recognition.interimResults = true; 
-    recognition.lang = 'en-US';
+    
+    // Set initial language from dropdown
+    recognition.lang = langSelect.value;
+
+    // Update language immediately when user changes the dropdown
+    langSelect.onchange = () => {
+        recognition.lang = langSelect.value;
+        // If we are currently listening, we need to restart for the change to take effect
+        if (startBtn.classList.contains('listening')) {
+            recognition.stop();
+            setTimeout(() => recognition.start(), 200);
+        }
+    };
 
     startBtn.onclick = () => {
         if (startBtn.classList.contains('listening')) {
             recognition.stop();
         } else {
-            // Keep what's already in the box so we don't lose manual edits
             finalTranscript = outputText.value; 
             recognition.start();
         }
@@ -170,7 +210,6 @@ const startBtn = document.getElementById('start-btn');
         finalTranscript = outputText.value;
     };
 
-    // THIS IS THE ONLY ONRESULT BLOCK YOU NEED
     recognition.onresult = (event) => {
         let interimTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -186,6 +225,7 @@ const startBtn = document.getElementById('start-btn');
 
     analyzeBtn.onclick = () => {
         const text = outputText.value;
+        // Regex matches digits in any language script (Western, Arabic, etc.)
         const matches = text.match(/\d+/g); 
         
         if (matches && matches.length > 0) {
