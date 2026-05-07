@@ -129,7 +129,7 @@
 </div>
 
 <script>
-    const startBtn = document.getElementById('start-btn');
+const startBtn = document.getElementById('start-btn');
     const analyzeBtn = document.getElementById('analyze-btn');
     const clearBtn = document.getElementById('clear-btn');
     const outputText = document.getElementById('output-text');
@@ -141,63 +141,51 @@
     let recognizedNumbers = [];
     let finalTranscript = ''; 
 
-    // --- Speech Recognition Setup ---
     const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-    
-    if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true; 
-        recognition.lang = 'en-US'; 
+    const recognition = new SpeechRecognition();
 
-        startBtn.onclick = () => {
-            if (startBtn.classList.contains('listening')) {
-                recognition.stop();
+    recognition.continuous = true;
+    recognition.interimResults = true; 
+    recognition.lang = 'en-US';
+
+    startBtn.onclick = () => {
+        if (startBtn.classList.contains('listening')) {
+            recognition.stop();
+        } else {
+            // Keep what's already in the box so we don't lose manual edits
+            finalTranscript = outputText.value; 
+            recognition.start();
+        }
+    };
+
+    recognition.onstart = () => {
+        startBtn.textContent = 'Stop Listening';
+        startBtn.classList.add('listening');
+        verifyBox.style.display = 'none';
+    };
+
+    recognition.onend = () => {
+        startBtn.textContent = 'Start Listening';
+        startBtn.classList.remove('listening');
+        finalTranscript = outputText.value;
+    };
+
+    // THIS IS THE ONLY ONRESULT BLOCK YOU NEED
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript + " ";
             } else {
-                // Pre-load the final transcript with whatever is currently in the text box
-                finalTranscript = outputText.value;
-                recognition.start();
+                interimTranscript += event.results[i][0].transcript;
             }
-        };
+        }
+        outputText.value = finalTranscript + interimTranscript;
+        outputText.scrollTop = outputText.scrollHeight;
+    };
 
-        recognition.onstart = () => {
-            startBtn.textContent = 'Stop Listening';
-            startBtn.classList.add('listening');
-            verifyBox.style.display = 'none';
-        };
-
-        recognition.onend = () => {
-            startBtn.textContent = 'Start Listening';
-            startBtn.classList.remove('listening');
-            finalTranscript = outputText.value;
-        };
-
-        recognition.onresult = (event) => {
-            let interimTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript + " ";
-                } else {
-                    interimTranscript += event.results[i][0].transcript;
-                }
-            }
-            // Update the UI with both finalized and live-guessing text
-            outputText.value = finalTranscript + interimTranscript;
-            outputText.scrollTop = outputText.scrollHeight;
-        };
-
-        recognition.onerror = (event) => {
-            console.error("Speech Recognition Error: ", event.error);
-        };
-
-    } else {
-        alert("This browser does not support Web Speech API. Please use Chrome or Edge.");
-    }
-
-    // --- Analysis Logic ---
     analyzeBtn.onclick = () => {
         const text = outputText.value;
-        // Regex to extract all sequences of digits
         const matches = text.match(/\d+/g); 
         
         if (matches && matches.length > 0) {
@@ -207,16 +195,13 @@
                 numberDisplay.innerHTML += `<span class="num-tag">${num}</span>`;
             });
             verifyBox.style.display = 'block';
-            verifyBox.scrollIntoView({ behavior: 'smooth' });
         } else {
-            alert("No numbers detected. Please speak clearly or type them in.");
+            alert("No numbers found!");
         }
     };
 
-    // --- User Choice Logic ---
     yesBtn.onclick = () => {
-        alert("Success! Numbers ready for JSON search: " + recognizedNumbers.join(", "));
-        // Next project step: Load your JSON files and compare these numbers!
+        alert("Checking lottery with: " + recognizedNumbers.join(", "));
     };
 
     noBtn.onclick = () => {
@@ -226,7 +211,7 @@
 
     clearBtn.onclick = () => {
         outputText.value = '';
-        finalTranscript = '';
+        finalTranscript = ''; 
         verifyBox.style.display = 'none';
     };
 </script>
