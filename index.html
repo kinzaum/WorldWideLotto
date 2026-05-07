@@ -64,65 +64,57 @@
     const noBtn = document.getElementById('no-btn');
 
     let recognizedNumbers = [];
+    let finalTranscript = ''; 
 
-// --- Speech Recognition Setup ---
-const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-const recognition = new SpeechRecognition();
+    // --- Speech Recognition Setup ---
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+    const recognition = new SpeechRecognition();
 
-recognition.continuous = true;
-recognition.interimResults = true; // This is the magic key
-recognition.lang = 'en-US';
+    recognition.continuous = true;
+    recognition.interimResults = true; 
+    recognition.lang = 'en-US';
 
-let finalTranscript = ''; // Stores everything confirmed so far
-
-startBtn.onclick = () => {
-    if (startBtn.classList.contains('listening')) {
-        recognition.stop();
-    } else {
-        // Clear previous session data when starting fresh
-        finalTranscript = outputText.value; 
-        recognition.start();
-    }
-};
-
-recognition.onresult = (event) => {
-    let interimTranscript = '';
-
-    for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) {
-            // Add to the permanent record
-            finalTranscript += event.results[i][0].transcript + " ";
+    startBtn.onclick = () => {
+        if (startBtn.classList.contains('listening')) {
+            recognition.stop();
         } else {
-            // Store the "live guess"
-            interimTranscript += event.results[i][0].transcript;
+            // Keep existing text if user wants to add more, or clear if fresh start
+            finalTranscript = outputText.value; 
+            recognition.start();
         }
-    }
+    };
 
-    // Update the textarea: Confirmed text + the live guess
-    outputText.value = finalTranscript + interimTranscript;
-    
-    // Keep the view scrolled to the bottom
-    outputText.scrollTop = outputText.scrollHeight;
-};
+    recognition.onstart = () => {
+        startBtn.textContent = 'Stop Listening';
+        startBtn.classList.add('listening');
+        verifyBox.style.display = 'none';
+    };
 
-recognition.onend = () => {
-    startBtn.textContent = 'Start Listening';
-    startBtn.classList.remove('listening');
-    // Save the final state to the variable
-    finalTranscript = outputText.value;
-};
+    recognition.onend = () => {
+        startBtn.textContent = 'Start Listening';
+        startBtn.classList.remove('listening');
+        finalTranscript = outputText.value;
+    };
+
+    // --- The MERGED Result Logic (Handles Live Typing) ---
     recognition.onresult = (event) => {
-        let transcript = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            transcript += event.results[i][0].transcript;
+        let interimTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript + " ";
+            } else {
+                interimTranscript += event.results[i][0].transcript;
+            }
         }
-        outputText.value += transcript.trim() + " ";
+
+        outputText.value = finalTranscript + interimTranscript;
+        outputText.scrollTop = outputText.scrollHeight;
     };
 
     // --- Analysis Logic ---
     analyzeBtn.onclick = () => {
         const text = outputText.value;
-        // This Regex finds all numbers in the text
         const matches = text.match(/\d+/g); 
         
         if (matches && matches.length > 0) {
@@ -132,24 +124,26 @@ recognition.onend = () => {
                 numberDisplay.innerHTML += `<span class="num-tag">${num}</span>`;
             });
             verifyBox.style.display = 'block';
+            // Scroll to the verification box so user sees it
+            verifyBox.scrollIntoView({ behavior: 'smooth' });
         } else {
-            alert("No numbers found in the speech!");
+            alert("No numbers found! Try speaking some lottery numbers.");
         }
     };
 
     // --- Choice Logic ---
     yesBtn.onclick = () => {
-        alert("Proceeding to check lottery database with: " + recognizedNumbers.join(", "));
-        // Here is where your JSON matching logic will go tomorrow!
+        alert("Proceeding to check database with: " + recognizedNumbers.join(", "));
     };
 
     noBtn.onclick = () => {
         verifyBox.style.display = 'none';
-        outputText.focus(); // Set focus back to text area for editing
+        outputText.focus(); 
     };
 
     clearBtn.onclick = () => {
         outputText.value = '';
+        finalTranscript = '';
         verifyBox.style.display = 'none';
     };
 </script>
