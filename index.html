@@ -3,48 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Recognition Tester</title>
+    <title>Multi-Line Voice Input</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: #f4f4f9;
+            background-color: #f0f2f5;
             margin: 0;
         }
         .container {
             background: white;
             padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             text-align: center;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
+        }
+        .controls {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
         }
         button {
-            padding: 12px 24px;
+            padding: 12px 20px;
             font-size: 1rem;
-            background-color: #007bff;
-            color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 1rem;
+            transition: transform 0.1s;
         }
-        button.listening {
-            background-color: #dc3545;
-            animation: pulse 1.5s infinite;
-        }
-        input {
+        #start-btn { background-color: #28a745; color: white; }
+        #clear-btn { background-color: #6c757d; color: white; }
+        
+        button:active { transform: scale(0.98); }
+        button.listening { background-color: #dc3545; animation: pulse 1.5s infinite; }
+
+        textarea {
             width: 100%;
-            padding: 12px;
+            height: 200px; /* Bigger area for multiple lines */
+            padding: 15px;
             font-size: 1.1rem;
             border: 2px solid #ddd;
-            border-radius: 8px;
+            border-radius: 10px;
             box-sizing: border-box;
+            resize: vertical; /* Let the user resize if they want */
+            font-family: inherit;
         }
         @keyframes pulse {
             0% { opacity: 1; }
@@ -56,24 +65,26 @@
 <body>
 
 <div class="container">
-    <h2>Lottery Voice Input</h2>
-    <button id="start-btn">Start Listening</button>
-    <input type="text" id="output-text" placeholder="Recognized text will appear here...">
+    <h2>Worldwide Lottery Checker</h2>
+    <div class="controls">
+        <button id="start-btn">Start Listening</button>
+        <button id="clear-btn">Clear Text</button>
+    </div>
+    <textarea id="output-text" placeholder="Speak your numbers..."></textarea>
 </div>
 
 <script>
     const startBtn = document.getElementById('start-btn');
+    const clearBtn = document.getElementById('clear-btn');
     const outputText = document.getElementById('output-text');
 
-    // Check for browser support
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (SpeechRecognition) {
         const recognition = new SpeechRecognition();
-
         recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US'; // Change this to 'pt-BR' for Portuguese
+        recognition.interimResults = false; // Only append when it's sure
+        recognition.lang = 'en-US';
 
         let isListening = false;
 
@@ -83,6 +94,10 @@
             } else {
                 recognition.stop();
             }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            outputText.value = '';
         });
 
         recognition.onstart = () => {
@@ -98,27 +113,23 @@
         };
 
         recognition.onresult = (event) => {
-            let finalTranscript = '';
+            let currentTranscript = '';
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
-                    finalTranscript += event.results[i][0].transcript;
+                    currentTranscript += event.results[i][0].transcript;
                 }
             }
-            // If we have a final result, put it in the input box
-            if (finalTranscript) {
-                outputText.value = finalTranscript;
+            
+            if (currentTranscript) {
+                // Append the new text to the existing text + a space
+                outputText.value += currentTranscript.trim() + " ";
+                // Automatically scroll to the bottom so the new text is visible
+                outputText.scrollTop = outputText.scrollHeight;
             }
-        };
-
-        recognition.onerror = (event) => {
-            console.error("Speech recognition error:", event.error);
-            isListening = false;
-            startBtn.textContent = 'Start Listening';
-            startBtn.classList.remove('listening');
         };
 
     } else {
-        alert("Your browser does not support the Web Speech API. Please try Chrome or Edge.");
+        alert("Web Speech API not supported.");
     }
 </script>
 
