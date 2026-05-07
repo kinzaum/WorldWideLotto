@@ -3,134 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Line Voice Input</title>
+    <title>Lottery Data Analyzer</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f0f2f5;
-            margin: 0;
-        }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 600px;
-        }
-        .controls {
-            margin-bottom: 1rem;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-        button {
-            padding: 12px 20px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.1s;
-        }
-        #start-btn { background-color: #28a745; color: white; }
-        #clear-btn { background-color: #6c757d; color: white; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; background-color: #f0f2f5; }
+        .container { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 600px; text-align: center; }
+        .controls { margin-bottom: 1rem; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         
-        button:active { transform: scale(0.98); }
+        button { padding: 12px 20px; font-size: 1rem; border: none; border-radius: 8px; cursor: pointer; color: white; transition: 0.2s; }
+        #start-btn { background-color: #28a745; }
+        #analyze-btn { background-color: #007bff; }
+        #clear-btn { background-color: #6c757d; }
+        
         button.listening { background-color: #dc3545; animation: pulse 1.5s infinite; }
+        textarea { width: 100%; height: 120px; padding: 15px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; margin-bottom: 1rem; }
 
-        textarea {
-            width: 100%;
-            height: 200px; /* Bigger area for multiple lines */
-            padding: 15px;
-            font-size: 1.1rem;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            box-sizing: border-box;
-            resize: vertical; /* Let the user resize if they want */
-            font-family: inherit;
+        /* Verification Box */
+        #verify-box { 
+            display: none; margin-top: 20px; padding: 20px; border: 2px solid #007bff; 
+            border-radius: 10px; background: #e7f1ff; text-align: center; 
         }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
+        .num-tag { display: inline-block; background: #007bff; color: white; padding: 5px 10px; margin: 5px; border-radius: 5px; font-weight: bold; }
+        .choice-btns { margin-top: 15px; display: flex; gap: 20px; justify-content: center; }
+        #yes-btn { background-color: #28a745; }
+        #no-btn { background-color: #dc3545; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Worldwide Lottery Checker</h2>
+    <h2>Lottery Speech Analyzer</h2>
     <div class="controls">
         <button id="start-btn">Start Listening</button>
-        <button id="clear-btn">Clear Text</button>
+        <button id="analyze-btn">Analyze Speech</button>
+        <button id="clear-btn">Clear</button>
     </div>
-    <textarea id="output-text" placeholder="Speak your numbers..."></textarea>
+    
+    <textarea id="output-text" placeholder="Speak numbers (e.g. 'My numbers are 12, 24, and 35')"></textarea>
+
+    <!-- Verification Section -->
+    <div id="verify-box">
+        <p>I recognized these numbers. Are they correct?</p>
+        <div id="number-display"></div>
+        <div class="choice-btns">
+            <button id="yes-btn">YES, Check Lottery</button>
+            <button id="no-btn">NO, Edit Text</button>
+        </div>
+    </div>
 </div>
 
 <script>
     const startBtn = document.getElementById('start-btn');
+    const analyzeBtn = document.getElementById('analyze-btn');
     const clearBtn = document.getElementById('clear-btn');
     const outputText = document.getElementById('output-text');
+    const verifyBox = document.getElementById('verify-box');
+    const numberDisplay = document.getElementById('number-display');
+    const yesBtn = document.getElementById('yes-btn');
+    const noBtn = document.getElementById('no-btn');
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognizedNumbers = [];
 
-    if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = false; // Only append when it's sure
-        recognition.lang = 'en-US';
+    // --- Speech Recognition Setup ---
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.lang = 'en-US';
 
-        let isListening = false;
+    startBtn.onclick = () => {
+        if (startBtn.classList.contains('listening')) {
+            recognition.stop();
+        } else {
+            recognition.start();
+        }
+    };
 
-        startBtn.addEventListener('click', () => {
-            if (!isListening) {
-                recognition.start();
-            } else {
-                recognition.stop();
-            }
-        });
+    recognition.onstart = () => {
+        startBtn.textContent = 'Stop Listening';
+        startBtn.classList.add('listening');
+        verifyBox.style.display = 'none';
+    };
 
-        clearBtn.addEventListener('click', () => {
-            outputText.value = '';
-        });
+    recognition.onend = () => {
+        startBtn.textContent = 'Start Listening';
+        startBtn.classList.remove('listening');
+    };
 
-        recognition.onstart = () => {
-            isListening = true;
-            startBtn.textContent = 'Stop Listening';
-            startBtn.classList.add('listening');
-        };
+    recognition.onresult = (event) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+        }
+        outputText.value += transcript.trim() + " ";
+    };
 
-        recognition.onend = () => {
-            isListening = false;
-            startBtn.textContent = 'Start Listening';
-            startBtn.classList.remove('listening');
-        };
+    // --- Analysis Logic ---
+    analyzeBtn.onclick = () => {
+        const text = outputText.value;
+        // This Regex finds all numbers in the text
+        const matches = text.match(/\d+/g); 
+        
+        if (matches && matches.length > 0) {
+            recognizedNumbers = matches;
+            numberDisplay.innerHTML = "";
+            recognizedNumbers.forEach(num => {
+                numberDisplay.innerHTML += `<span class="num-tag">${num}</span>`;
+            });
+            verifyBox.style.display = 'block';
+        } else {
+            alert("No numbers found in the speech!");
+        }
+    };
 
-        recognition.onresult = (event) => {
-            let currentTranscript = '';
-            for (let i = event.resultIndex; i < event.results.length; ++i) {
-                if (event.results[i].isFinal) {
-                    currentTranscript += event.results[i][0].transcript;
-                }
-            }
-            
-            if (currentTranscript) {
-                // Append the new text to the existing text + a space
-                outputText.value += currentTranscript.trim() + " ";
-                // Automatically scroll to the bottom so the new text is visible
-                outputText.scrollTop = outputText.scrollHeight;
-            }
-        };
+    // --- Choice Logic ---
+    yesBtn.onclick = () => {
+        alert("Proceeding to check lottery database with: " + recognizedNumbers.join(", "));
+        // Here is where your JSON matching logic will go tomorrow!
+    };
 
-    } else {
-        alert("Web Speech API not supported.");
-    }
+    noBtn.onclick = () => {
+        verifyBox.style.display = 'none';
+        outputText.focus(); // Set focus back to text area for editing
+    };
+
+    clearBtn.onclick = () => {
+        outputText.value = '';
+        verifyBox.style.display = 'none';
+    };
 </script>
 
 </body>
