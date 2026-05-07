@@ -65,31 +65,52 @@
 
     let recognizedNumbers = [];
 
-    // --- Speech Recognition Setup ---
-    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.lang = 'en-US';
+// --- Speech Recognition Setup ---
+const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+const recognition = new SpeechRecognition();
 
-    startBtn.onclick = () => {
-        if (startBtn.classList.contains('listening')) {
-            recognition.stop();
+recognition.continuous = true;
+recognition.interimResults = true; // This is the magic key
+recognition.lang = 'en-US';
+
+let finalTranscript = ''; // Stores everything confirmed so far
+
+startBtn.onclick = () => {
+    if (startBtn.classList.contains('listening')) {
+        recognition.stop();
+    } else {
+        // Clear previous session data when starting fresh
+        finalTranscript = outputText.value; 
+        recognition.start();
+    }
+};
+
+recognition.onresult = (event) => {
+    let interimTranscript = '';
+
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+            // Add to the permanent record
+            finalTranscript += event.results[i][0].transcript + " ";
         } else {
-            recognition.start();
+            // Store the "live guess"
+            interimTranscript += event.results[i][0].transcript;
         }
-    };
+    }
 
-    recognition.onstart = () => {
-        startBtn.textContent = 'Stop Listening';
-        startBtn.classList.add('listening');
-        verifyBox.style.display = 'none';
-    };
+    // Update the textarea: Confirmed text + the live guess
+    outputText.value = finalTranscript + interimTranscript;
+    
+    // Keep the view scrolled to the bottom
+    outputText.scrollTop = outputText.scrollHeight;
+};
 
-    recognition.onend = () => {
-        startBtn.textContent = 'Start Listening';
-        startBtn.classList.remove('listening');
-    };
-
+recognition.onend = () => {
+    startBtn.textContent = 'Start Listening';
+    startBtn.classList.remove('listening');
+    // Save the final state to the variable
+    finalTranscript = outputText.value;
+};
     recognition.onresult = (event) => {
         let transcript = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
