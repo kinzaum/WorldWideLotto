@@ -20,7 +20,7 @@
             border-radius: 15px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
             width: 95%; 
-            max-width: 600px; 
+            max-width: 650px; 
             text-align: center; 
         }
         h2 { color: #333; margin-bottom: 1.5rem; }
@@ -51,7 +51,7 @@
         }
         
         button { 
-            padding: 12px 24px; 
+            padding: 10px 20px; 
             font-size: 1rem; 
             border: none; 
             border-radius: 8px; 
@@ -59,7 +59,19 @@
             color: white; 
             font-weight: 600;
             transition: all 0.2s ease; 
+            min-width: 140px;
+            line-height: 1.2;
         }
+        
+        /* The sub-label style */
+        button span {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
         #start-btn { background-color: #28a745; }
         #analyze-btn { background-color: #007bff; }
         #clear-btn { background-color: #6c757d; }
@@ -123,7 +135,6 @@
 <div class="container">
     <h2>Lottery Speech Analyzer</h2>
     
-    <!-- Language Selection Dropdown -->
     <div class="settings-row">
         <label for="lang-select">Language:</label>
         <select id="lang-select">
@@ -139,9 +150,9 @@
     </div>
 
     <div class="controls">
-        <button id="start-btn">Start Listening</button>
-        <button id="analyze-btn">Analyze Speech</button>
-        <button id="clear-btn">Clear</button>
+        <button id="start-btn">Start Listening<span id="start-sub"></span></button>
+        <button id="analyze-btn">Analyze Speech<span id="analyze-sub"></span></button>
+        <button id="clear-btn">Clear<span id="clear-sub"></span></button>
     </div>
     
     <textarea id="output-text" placeholder="Speak your lottery numbers..."></textarea>
@@ -167,6 +178,23 @@
     const noBtn = document.getElementById('no-btn');
     const langSelect = document.getElementById('lang-select');
 
+    // Sub-label elements
+    const startSub = document.getElementById('start-sub');
+    const analyzeSub = document.getElementById('analyze-sub');
+    const clearSub = document.getElementById('clear-sub');
+
+    // Translation Dictionary
+    const translations = {
+        "en-US": { start: "", analyze: "", clear: "" },
+        "pt-BR": { start: "Começar a Ouvir", analyze: "Analisar Fala", clear: "Limpar" },
+        "fr-FR": { start: "Commencer à écouter", analyze: "Analyser la parole", clear: "Effacer" },
+        "es-ES": { start: "Empezar a escuchar", analyze: "Analizar voz", clear: "Borrar" },
+        "it-IT": { start: "Inizia ad ascoltare", analyze: "Analizza il discorso", clear: "Cancella" },
+        "de-DE": { start: "Zuhören starten", analyze: "Sprache analysieren", clear: "Löschen" },
+        "ko-KR": { start: "듣기 시작", analyze: "음성 분석", clear: "지우기" },
+        "zh-CN": { start: "开始倾听", analyze: "语音分析", clear: "清除" }
+    };
+
     let recognizedNumbers = [];
     let finalTranscript = ''; 
 
@@ -175,14 +203,31 @@
 
     recognition.continuous = true;
     recognition.interimResults = true; 
-    
-    // Set initial language from dropdown
-    recognition.lang = langSelect.value;
 
-    // Update language immediately when user changes the dropdown
+    // Function to update labels
+    function updateButtonLabels() {
+        const lang = langSelect.value;
+        const t = translations[lang];
+        
+        startSub.textContent = t.start;
+        analyzeSub.textContent = t.analyze;
+        clearSub.textContent = t.clear;
+
+        // If listening, update the main text but keep sub-label
+        if (startBtn.classList.contains('listening')) {
+            startBtn.innerHTML = `Stop Listening<span>${lang === 'en-US' ? '' : (lang === 'pt-BR' ? 'Parar de Ouvir' : 'Stop')}</span>`;
+        } else {
+            startBtn.innerHTML = `Start Listening<span id="start-sub">${t.start}</span>`;
+        }
+    }
+
+    // Initial language setup
+    recognition.lang = langSelect.value;
+    updateButtonLabels();
+
     langSelect.onchange = () => {
         recognition.lang = langSelect.value;
-        // If we are currently listening, we need to restart for the change to take effect
+        updateButtonLabels();
         if (startBtn.classList.contains('listening')) {
             recognition.stop();
             setTimeout(() => recognition.start(), 200);
@@ -199,14 +244,14 @@
     };
 
     recognition.onstart = () => {
-        startBtn.textContent = 'Stop Listening';
         startBtn.classList.add('listening');
+        updateButtonLabels();
         verifyBox.style.display = 'none';
     };
 
     recognition.onend = () => {
-        startBtn.textContent = 'Start Listening';
         startBtn.classList.remove('listening');
+        updateButtonLabels();
         finalTranscript = outputText.value;
     };
 
@@ -225,9 +270,7 @@
 
     analyzeBtn.onclick = () => {
         const text = outputText.value;
-        // Regex matches digits in any language script (Western, Arabic, etc.)
         const matches = text.match(/\d+/g); 
-        
         if (matches && matches.length > 0) {
             recognizedNumbers = matches;
             numberDisplay.innerHTML = "";
@@ -240,20 +283,9 @@
         }
     };
 
-    yesBtn.onclick = () => {
-        alert("Checking lottery with: " + recognizedNumbers.join(", "));
-    };
-
-    noBtn.onclick = () => {
-        verifyBox.style.display = 'none';
-        outputText.focus(); 
-    };
-
-    clearBtn.onclick = () => {
-        outputText.value = '';
-        finalTranscript = ''; 
-        verifyBox.style.display = 'none';
-    };
+    yesBtn.onclick = () => { alert("Checking lottery with: " + recognizedNumbers.join(", ")); };
+    noBtn.onclick = () => { verifyBox.style.display = 'none'; outputText.focus(); };
+    clearBtn.onclick = () => { outputText.value = ''; finalTranscript = ''; verifyBox.style.display = 'none'; };
 </script>
 
 </body>
