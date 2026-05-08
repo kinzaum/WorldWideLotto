@@ -168,7 +168,7 @@
 </div>
 
 <script>
-    const startBtn = document.getElementById('start-btn');
+const startBtn = document.getElementById('start-btn');
     const analyzeBtn = document.getElementById('analyze-btn');
     const clearBtn = document.getElementById('clear-btn');
     const outputText = document.getElementById('output-text');
@@ -184,6 +184,16 @@
     let masterDatabase = [];
     let recognizedNumbers = [];
     let finalTranscript = ''; 
+
+    // Store a pristine copy of the original "Are they correct?" prompt on load
+    const originalVerifyHTML = verifyBox.innerHTML;
+
+    // Helper to restore the original confirmation screen
+    function resetVerifyBoxToDefault() {
+        verifyBox.innerHTML = originalVerifyHTML;
+        // Since we rewrote the innerHTML, we must re-bind the click actions to the newly created buttons
+        bindChoiceButtons();
+    }
 
     // 1. LOAD DATABASE ON PAGE LOAD
     fetch('master_data.json')
@@ -205,21 +215,17 @@
         "zh-CN": { start: "开始倾听", analyze: "语音分析", clear: "清除" }
     };
 
-function updateButtonLabels() {
+    function updateButtonLabels() {
         const lang = langSelect.value;
         const t = translations[lang];
         
-        // Update the sub-labels for analyze and clear buttons safely
         analyzeSub.textContent = t.analyze;
         clearSub.textContent = t.clear;
 
-        // Update start button text and class state without wiping out elements
         if (startBtn.classList.contains('listening')) {
-            // Change the first text node of the button to "Stop Listening"
             startBtn.childNodes[0].textContent = "Stop Listening ";
             startSub.textContent = lang === 'en-US' ? '' : 'Stop';
         } else {
-            // Reset back to "Start Listening"
             startBtn.childNodes[0].textContent = "Start Listening ";
             startSub.textContent = t.start;
         }
@@ -278,19 +284,26 @@ function updateButtonLabels() {
         const text = outputText.value;
         const matches = text.match(/\d+/g); 
         if (matches && matches.length > 0) {
-            recognizedNumbers = [...new Set(matches.map(Number))]; // Remove duplicates & convert to numbers
-            numberDisplay.innerHTML = "";
+            recognizedNumbers = [...new Set(matches.map(Number))]; // Remove duplicates
+            
+            // Revert back to the pristine YES/NO question screen
+            resetVerifyBoxToDefault();
+
+            // Populate the number display on the restored element
+            const currentNumberDisplay = document.getElementById('number-display');
+            currentNumberDisplay.innerHTML = "";
             recognizedNumbers.forEach(num => {
-                numberDisplay.innerHTML += `<span class="num-tag">${num}</span>`;
+                currentNumberDisplay.innerHTML += `<span class="num-tag">${num}</span>`;
             });
+            
             verifyBox.style.display = 'block';
         } else {
             alert("No numbers found!");
         }
     };
 
-// 2. THE SEARCH LOGIC (Grouped by 3, 4, 5, and 6 Matches)
-    yesBtn.onclick = () => {
+    // 2. THE SEARCH LOGIC (Grouped by 3, 4, 5, and 6 Matches)
+    const handleYesClick = () => {
         // Prepare buckets for each matching tier
         const categories = {
             6: [],
@@ -360,16 +373,13 @@ function updateButtonLabels() {
             <button id="close-results-btn" style="margin-top: 20px; background-color: #6c757d; width: 100%;">Close Results</button>
         `;
 
-        // Render this temporary interface directly inside the verifyBox to replace the confirmation buttons
-        const originalVerifyContent = verifyBox.innerHTML;
+        // Render results HTML inside verifyBox
         verifyBox.innerHTML = resultsHTML;
 
         // Add close button functionality to restore original display
         document.getElementById('close-results-btn').onclick = () => {
-            verifyBox.innerHTML = originalVerifyContent;
+            resetVerifyBoxToDefault();
             verifyBox.style.display = 'none';
-            // Re-bind original yes/no buttons since we rewrote the innerHTML
-            bindChoiceButtons(); 
         };
     };
 
@@ -386,12 +396,22 @@ function updateButtonLabels() {
 
     // Helper to keep buttons active when swapping dynamic HTML
     function bindChoiceButtons() {
-        document.getElementById('yes-btn').onclick = yesBtn.onclick;
-        document.getElementById('no-btn').onclick = noBtn.onclick;
+        const currentYesBtn = document.getElementById('yes-btn');
+        const currentNoBtn = document.getElementById('no-btn');
+        
+        if (currentYesBtn) currentYesBtn.onclick = handleYesClick;
+        if (currentNoBtn) currentNoBtn.onclick = () => { verifyBox.style.display = 'none'; outputText.focus(); };
     }
 
-    noBtn.onclick = () => { verifyBox.style.display = 'none'; outputText.focus(); };
-    clearBtn.onclick = () => { outputText.value = ''; finalTranscript = ''; verifyBox.style.display = 'none'; };
+    // Initialize button behaviors
+    bindChoiceButtons();
+
+    clearBtn.onclick = () => { 
+        outputText.value = ''; 
+        finalTranscript = ''; 
+        resetVerifyBoxToDefault();
+        verifyBox.style.display = 'none'; 
+    };
 
     updateButtonLabels();
 </script>
