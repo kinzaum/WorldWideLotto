@@ -289,25 +289,106 @@ function updateButtonLabels() {
         }
     };
 
-    // 2. THE SEARCH LOGIC
+// 2. THE SEARCH LOGIC (Grouped by 3, 4, 5, and 6 Matches)
     yesBtn.onclick = () => {
-        const results = masterDatabase.filter(draw => {
-            const mainMatches = draw.numbers.filter(n => recognizedNumbers.includes(n));
-            const bonusMatches = draw.bonus.filter(n => recognizedNumbers.includes(n));
-            return mainMatches.length > 0 || bonusMatches.length > 0;
+        // Prepare buckets for each matching tier
+        const categories = {
+            6: [],
+            5: [],
+            4: [],
+            3: []
+        };
+
+        // Categorize each draw based on how many main numbers match
+        masterDatabase.forEach(draw => {
+            const matchCount = draw.numbers.filter(n => recognizedNumbers.includes(n)).length;
+            
+            if (matchCount >= 3 && matchCount <= 6) {
+                categories[matchCount].push(draw);
+            }
         });
 
-        if (results.length > 0) {
-            let message = `Found ${results.length} matching draws:\n\n`;
-            results.slice(0, 5).forEach(r => {
-                message += `${r.game} (ID: ${r.id}): ${r.numbers.join(', ')} [Bonus: ${r.bonus.join(', ')}]\n`;
-            });
-            if (results.length > 5) message += "...and more!";
-            alert(message);
-        } else {
-            alert("No matches found in history.");
+        // Check if we found any matches at all
+        const totalMatches = categories[6].length + categories[5].length + categories[4].length + categories[3].length;
+
+        if (totalMatches === 0) {
+            alert("No draws found with 3, 4, 5, or 6 matching numbers.");
+            return;
         }
+
+        // Build the HTML results interface dynamically
+        let resultsHTML = `
+            <div style="text-align: left; max-height: 450px; overflow-y: auto; padding-right: 10px;">
+                <h3 style="margin-top: 0; color: #333; text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+                    Search Results (${totalMatches} Matches)
+                </h3>
+        `;
+
+        // Generate sections starting from 6 matches down to 3 matches
+        for (let matchNum = 6; matchNum >= 3; matchNum--) {
+            const draws = categories[matchNum];
+            if (draws.length > 0) {
+                resultsHTML += `
+                    <div style="margin-top: 15px; margin-bottom: 10px;">
+                        <h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin: 0 0 10px 0; font-size: 1rem;">
+                            ${matchNum} Numbers Match (${draws.length} ${draws.length === 1 ? 'draw' : 'draws'})
+                        </h4>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                `;
+
+                draws.forEach(draw => {
+                    resultsHTML += `
+                        <li style="padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; line-height: 1.4;">
+                            <strong>${draw.game}</strong> (ID: ${draw.id}) - <em>${draw.date}</em><br/>
+                            <span style="color: #555;">Numbers: ${draw.numbers.join(', ')} ${draw.bonus.length ? `[Bonus: ${draw.bonus.join(', ')}]` : ''}</span><br/>
+                            <a href="${draw.url}" target="_blank" style="color: #007bff; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                Go to Official Page &rarr;
+                            </a>
+                        </li>
+                    `;
+                });
+
+                resultsHTML += `
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+
+        resultsHTML += `
+            </div>
+            <button id="close-results-btn" style="margin-top: 20px; background-color: #6c757d; width: 100%;">Close Results</button>
+        `;
+
+        // Render this temporary interface directly inside the verifyBox to replace the confirmation buttons
+        const originalVerifyContent = verifyBox.innerHTML;
+        verifyBox.innerHTML = resultsHTML;
+
+        // Add close button functionality to restore original display
+        document.getElementById('close-results-btn').onclick = () => {
+            verifyBox.innerHTML = originalVerifyContent;
+            verifyBox.style.display = 'none';
+            // Re-bind original yes/no buttons since we rewrote the innerHTML
+            bindChoiceButtons(); 
+        };
     };
+
+    // Helper color scheme generator for match tiers
+    function getTierColor(matches) {
+        switch(matches) {
+            case 6: return '#28a745'; // Green
+            case 5: return '#ffc107'; // Yellow/Amber
+            case 4: return '#fd7e14'; // Orange
+            case 3: return '#17a2b8'; // Teal
+            default: return '#007bff';
+        }
+    }
+
+    // Helper to keep buttons active when swapping dynamic HTML
+    function bindChoiceButtons() {
+        document.getElementById('yes-btn').onclick = yesBtn.onclick;
+        document.getElementById('no-btn').onclick = noBtn.onclick;
+    }
 
     noBtn.onclick = () => { verifyBox.style.display = 'none'; outputText.focus(); };
     clearBtn.onclick = () => { outputText.value = ''; finalTranscript = ''; verifyBox.style.display = 'none'; };
