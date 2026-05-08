@@ -177,13 +177,23 @@
     const yesBtn = document.getElementById('yes-btn');
     const noBtn = document.getElementById('no-btn');
     const langSelect = document.getElementById('lang-select');
-
-    // Sub-label elements
     const startSub = document.getElementById('start-sub');
     const analyzeSub = document.getElementById('analyze-sub');
     const clearSub = document.getElementById('clear-sub');
 
-    // Translation Dictionary
+    let masterDatabase = [];
+    let recognizedNumbers = [];
+    let finalTranscript = ''; 
+
+    // 1. LOAD DATABASE ON PAGE LOAD
+    fetch('master_data.json')
+        .then(response => response.json())
+        .then(data => {
+            masterDatabase = data;
+            console.log("Database loaded successfully!");
+        })
+        .catch(err => console.error("Could not load database:", err));
+
     const translations = {
         "en-US": { start: "", analyze: "", clear: "" },
         "pt-BR": { start: "Começar a Ouvir", analyze: "Analisar Fala", clear: "Limpar" },
@@ -195,35 +205,31 @@
         "zh-CN": { start: "开始倾听", analyze: "语音分析", clear: "清除" }
     };
 
-    let recognizedNumbers = [];
-    let finalTranscript = ''; 
-
-    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
-    const recognition = new SpeechRecognition();
-
-    recognition.continuous = true;
-    recognition.interimResults = true; 
-
-    // Function to update labels
-    function updateButtonLabels() {
+function updateButtonLabels() {
         const lang = langSelect.value;
         const t = translations[lang];
         
-        startSub.textContent = t.start;
+        // Update the sub-labels for analyze and clear buttons safely
         analyzeSub.textContent = t.analyze;
         clearSub.textContent = t.clear;
 
-        // If listening, update the main text but keep sub-label
+        // Update start button text and class state without wiping out elements
         if (startBtn.classList.contains('listening')) {
-            startBtn.innerHTML = `Stop Listening<span>${lang === 'en-US' ? '' : (lang === 'pt-BR' ? 'Parar de Ouvir' : 'Stop')}</span>`;
+            // Change the first text node of the button to "Stop Listening"
+            startBtn.childNodes[0].textContent = "Stop Listening ";
+            startSub.textContent = lang === 'en-US' ? '' : 'Stop';
         } else {
-            startBtn.innerHTML = `Start Listening<span id="start-sub">${t.start}</span>`;
+            // Reset back to "Start Listening"
+            startBtn.childNodes[0].textContent = "Start Listening ";
+            startSub.textContent = t.start;
         }
     }
 
-    // Initial language setup
+    const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true; 
     recognition.lang = langSelect.value;
-    updateButtonLabels();
 
     langSelect.onchange = () => {
         recognition.lang = langSelect.value;
@@ -272,7 +278,7 @@
         const text = outputText.value;
         const matches = text.match(/\d+/g); 
         if (matches && matches.length > 0) {
-            recognizedNumbers = matches;
+            recognizedNumbers = [...new Set(matches.map(Number))]; // Remove duplicates & convert to numbers
             numberDisplay.innerHTML = "";
             recognizedNumbers.forEach(num => {
                 numberDisplay.innerHTML += `<span class="num-tag">${num}</span>`;
@@ -283,9 +289,30 @@
         }
     };
 
-    yesBtn.onclick = () => { alert("Checking lottery with: " + recognizedNumbers.join(", ")); };
+    // 2. THE SEARCH LOGIC
+    yesBtn.onclick = () => {
+        const results = masterDatabase.filter(draw => {
+            const mainMatches = draw.numbers.filter(n => recognizedNumbers.includes(n));
+            const bonusMatches = draw.bonus.filter(n => recognizedNumbers.includes(n));
+            return mainMatches.length > 0 || bonusMatches.length > 0;
+        });
+
+        if (results.length > 0) {
+            let message = `Found ${results.length} matching draws:\n\n`;
+            results.slice(0, 5).forEach(r => {
+                message += `${r.game} (ID: ${r.id}): ${r.numbers.join(', ')} [Bonus: ${r.bonus.join(', ')}]\n`;
+            });
+            if (results.length > 5) message += "...and more!";
+            alert(message);
+        } else {
+            alert("No matches found in history.");
+        }
+    };
+
     noBtn.onclick = () => { verifyBox.style.display = 'none'; outputText.focus(); };
     clearBtn.onclick = () => { outputText.value = ''; finalTranscript = ''; verifyBox.style.display = 'none'; };
+
+    updateButtonLabels();
 </script>
 
 </body>
