@@ -168,7 +168,7 @@
 </div>
 
 <script>
-const startBtn = document.getElementById('start-btn');
+    const startBtn = document.getElementById('start-btn');
     const analyzeBtn = document.getElementById('analyze-btn');
     const clearBtn = document.getElementById('clear-btn');
     const outputText = document.getElementById('output-text');
@@ -181,28 +181,19 @@ const startBtn = document.getElementById('start-btn');
     const analyzeSub = document.getElementById('analyze-sub');
     const clearSub = document.getElementById('clear-sub');
 
-    let masterDatabase = [];
+    // Secure Cloud Architecture Variables
+    const API_URL = "https://script.google.com/macros/s/AKfycbwMApjBhxoBJct7tAy6hEHk0PuOtCUIBgozwtWJKRhhtmRotZ7gLcazcEraf8dsyz6srw/exec";
     let recognizedNumbers = [];
     let finalTranscript = ''; 
 
-    // Store a pristine copy of the original "Are they correct?" prompt on load
+    // Store a pristine copy of the original confirmation block structure
     const originalVerifyHTML = verifyBox.innerHTML;
 
-    // Helper to restore the original confirmation screen
+    // Helper to restore the original confirmation screen elements
     function resetVerifyBoxToDefault() {
         verifyBox.innerHTML = originalVerifyHTML;
-        // Since we rewrote the innerHTML, we must re-bind the click actions to the newly created buttons
         bindChoiceButtons();
     }
-
-    // 1. LOAD DATABASE ON PAGE LOAD
-    fetch('master_data.json')
-        .then(response => response.json())
-        .then(data => {
-            masterDatabase = data;
-            console.log("Database loaded successfully!");
-        })
-        .catch(err => console.error("Could not load database:", err));
 
     const translations = {
         "en-US": { start: "", analyze: "", clear: "" },
@@ -302,99 +293,99 @@ const startBtn = document.getElementById('start-btn');
         }
     };
 
-    // 2. THE SEARCH LOGIC (Grouped by 3, 4, 5, and 6 Matches)
+    // SECURE REMOTE SEARCH LOGIC VIA GOOGLE APPS SCRIPT WEB API
     const handleYesClick = () => {
-        // Prepare buckets for each matching tier
-        const categories = {
-            6: [],
-            5: [],
-            4: [],
-            3: []
-        };
+        // Show a loading UI indicator inside the panel during cloud computation
+        verifyBox.innerHTML = `<p style="font-weight: 600; color: #007bff; padding: 20px 0;">Analyzing worldwide database drawings in the cloud...</p>`;
 
-        // Categorize each draw based on how many main numbers match
-        masterDatabase.forEach(draw => {
-            const matchCount = draw.numbers.filter(n => recognizedNumbers.includes(n)).length;
-            
-            if (matchCount >= 3 && matchCount <= 6) {
-                categories[matchCount].push(draw);
-            }
-        });
+        // Convert the clean local array numbers into a flat parameter string
+        const numbersQuery = recognizedNumbers.join(',');
+        
+        fetch(`${API_URL}?numbers=${numbersQuery}`)
+            .then(response => response.json())
+            .then(categories => {
+                
+                // Calculate total match count across the payload groups
+                const totalMatches = categories[6].length + categories[5].length + categories[4].length + categories[3].length;
 
-        // Check if we found any matches at all
-        const totalMatches = categories[6].length + categories[5].length + categories[4].length + categories[3].length;
+                if (totalMatches === 0) {
+                    alert("No historical draws found with 3, 4, 5, or 6 matching numbers.");
+                    resetVerifyBoxToDefault();
+                    verifyBox.style.display = 'none';
+                    return;
+                }
 
-        if (totalMatches === 0) {
-            alert("No draws found with 3, 4, 5, or 6 matching numbers.");
-            return;
-        }
-
-        // Build the HTML results interface dynamically
-        let resultsHTML = `
-            <div style="text-align: left; max-height: 450px; overflow-y: auto; padding-right: 10px;">
-                <h3 style="margin-top: 0; color: #333; text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
-                    Search Results (${totalMatches} Matches)
-                </h3>
-        `;
-
-        // Generate sections starting from 6 matches down to 3 matches
-        for (let matchNum = 6; matchNum >= 3; matchNum--) {
-            const draws = categories[matchNum];
-            if (draws.length > 0) {
-                resultsHTML += `
-                    <div style="margin-top: 15px; margin-bottom: 10px;">
-                        <h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin: 0 0 10px 0; font-size: 1rem;">
-                            ${matchNum} Numbers Match (${draws.length} ${draws.length === 1 ? 'draw' : 'draws'})
-                        </h4>
-                        <ul style="list-style: none; padding: 0; margin: 0;">
+                // Build out the display panels dynamically from cloud payload
+                let resultsHTML = `
+                    <div style="text-align: left; max-height: 450px; overflow-y: auto; padding-right: 10px;">
+                        <h3 style="margin-top: 0; color: #333; text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+                            Search Results (${totalMatches} Matches)
+                        </h3>
                 `;
 
-                draws.forEach(draw => {
-                    resultsHTML += `
-                        <li style="padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; line-height: 1.4;">
-                            <strong>${draw.game}</strong> (ID: ${draw.id}) - <em>${draw.date}</em><br/>
-                            <span style="color: #555;">Numbers: ${draw.numbers.join(', ')} ${draw.bonus.length ? `[Bonus: ${draw.bonus.join(', ')}]` : ''}</span><br/>
-                            <a href="${draw.url}" target="_blank" style="color: #007bff; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
-                                Go to Official Page &rarr;
-                            </a>
-                        </li>
-                    `;
-                });
+                // Handle sequential validation blocks from 6 matches down to 3
+                for (let matchNum = 6; matchNum >= 3; matchNum--) {
+                    const draws = categories[matchNum];
+                    if (draws && draws.length > 0) {
+                        resultsHTML += `
+                            <div style="margin-top: 15px; margin-bottom: 10px;">
+                                <h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin: 0 0 10px 0; font-size: 1rem;">
+                                    ${matchNum} Numbers Match (${draws.length} ${draws.length === 1 ? 'draw' : 'draws'})
+                                </h4>
+                                <ul style="list-style: none; padding: 0; margin: 0;">
+                        `;
+
+                        draws.forEach(draw => {
+                            resultsHTML += `
+                                <li style="padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; line-height: 1.4;">
+                                    <strong>${draw.game}</strong> (ID: ${draw.id}) - <em>${draw.date}</em><br/>
+                                    <span style="color: #555;">Numbers: ${draw.numbers.join(', ')} ${draw.bonus.length ? `[Bonus: ${draw.bonus.join(', ')}]` : ''}</span><br/>
+                                    <a href="${draw.url}" target="_blank" style="color: #007bff; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
+                                        Go to Official Page &rarr;
+                                    </a>
+                                </li>
+                            `;
+                        });
+
+                        resultsHTML += `
+                                </ul>
+                            </div>
+                        `;
+                    }
+                }
 
                 resultsHTML += `
-                        </ul>
                     </div>
+                    <button id="close-results-btn" style="margin-top: 20px; background-color: #6c757d; width: 100%;">Close Results</button>
                 `;
-            }
-        }
 
-        resultsHTML += `
-            </div>
-            <button id="close-results-btn" style="margin-top: 20px; background-color: #6c757d; width: 100%;">Close Results</button>
-        `;
+                // Swap loading screen with the rendered template lists
+                verifyBox.innerHTML = resultsHTML;
 
-        // Render results HTML inside verifyBox
-        verifyBox.innerHTML = resultsHTML;
-
-        // Add close button functionality to restore original display
-        document.getElementById('close-results-btn').onclick = () => {
-            resetVerifyBoxToDefault();
-            verifyBox.style.display = 'none';
-        };
+                document.getElementById('close-results-btn').onclick = () => {
+                    resetVerifyBoxToDefault();
+                    verifyBox.style.display = 'none';
+                };
+            })
+            .catch(err => {
+                console.error("Error connected to remote analytics service:", err);
+                alert("Failed to connect to the secure lottery data pipeline.");
+                resetVerifyBoxToDefault();
+            });
     };
 
-    // Helper color scheme generator for match tiers
+    // Helper engine colors for layout levels
     function getTierColor(matches) {
         switch(matches) {
-            case 6: return '#28a745'; // Green
-            case 5: return '#ffc107'; // Yellow/Amber
-            case 4: return '#fd7e14'; // Orange
-            case 3: return '#17a2b8'; // Teal
+            case 6: return '#28a745'; 
+            case 5: return '#ffc107'; 
+            case 4: return '#fd7e14'; 
+            case 3: return '#17a2b8'; 
             default: return '#007bff';
         }
     }
 
-    // Helper to keep buttons active when swapping dynamic HTML
+    // Explicit binding helper to handle component rewrites
     function bindChoiceButtons() {
         const currentYesBtn = document.getElementById('yes-btn');
         const currentNoBtn = document.getElementById('no-btn');
@@ -403,7 +394,7 @@ const startBtn = document.getElementById('start-btn');
         if (currentNoBtn) currentNoBtn.onclick = () => { verifyBox.style.display = 'none'; outputText.focus(); };
     }
 
-    // Initialize button behaviors
+    // Run initial controller configurations
     bindChoiceButtons();
 
     clearBtn.onclick = () => { 
