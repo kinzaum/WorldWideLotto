@@ -203,7 +203,7 @@
         "it-IT": { start: "Inizia ad ascoltare", analyze: "Analizza il discorso", clear: "Cancella" },
         "de-DE": { start: "Zuhören starten", analyze: "Sprache analysieren", clear: "Löschen" },
         "ko-KR": { start: "듣기 시작", analyze: "음성 분석", clear: "지우기" },
-        "zh-CN": { start: "开始倾听", analyze: "语音分析", clear: "清除" }
+        "zh-CN": { start: "开始倾听", analyze: "语音 analysis", clear: "清除" }
     };
 
     function updateButtonLabels() {
@@ -315,12 +315,50 @@
                     return;
                 }
 
+                // Define your static "Lazy Estimate" prize values based on today's averages
+                const prizeValues = {
+                    6: 20000000, // $20 Million
+                    5: 10000,    // $10k
+                    4: 100,      // $100
+                    3: 10        // $10
+                };
+
+                let totalEstimatedGains = 0;
+
+                // Loop through to calculate the total lazy prize money
+                for (let matchNum = 6; matchNum >= 3; matchNum--) {
+                    const draws = categories[matchNum];
+                    if (draws && draws.length > 0) {
+                        totalEstimatedGains += draws.length * prizeValues[matchNum];
+                    }
+                }
+
+                // Format the total as a clean currency string (e.g., $20,010,430)
+                const formattedGains = new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    maximumFractionDigits: 0
+                }).format(totalEstimatedGains);
+
                 // Build out the display panels dynamically from cloud payload
                 let resultsHTML = `
                     <div style="text-align: left; max-height: 450px; overflow-y: auto; padding-right: 10px;">
+                        
                         <h3 style="margin-top: 0; color: #333; text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
                             Search Results (${totalMatches} Matches)
                         </h3>
+
+                        <div style="background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center;">
+                            <span style="font-size: 0.85rem; font-weight: bold; color: #856404; text-transform: uppercase; display: block; margin-bottom: 5px;">
+                                ⚠️ Lazy Estimate Breakdown
+                            </span>
+                            <span style="font-size: 1.8rem; font-weight: 800; color: #28a745; display: block; margin-bottom: 8px;">
+                                ${formattedGains}
+                            </span>
+                            <p style="font-size: 0.8rem; color: #665114; margin: 0; line-height: 1.4; font-style: italic;">
+                                This amount is a purely modern valuation to estimate potential gains. Because these historical drawings span different countries, time periods, and currencies, actual historical payouts varied significantly. Use the official links below to view actual historical prize declarations.
+                            </p>
+                        </div>
                 `;
 
                 // Handle sequential validation blocks from 6 matches down to 3
@@ -330,7 +368,7 @@
                         resultsHTML += `
                             <div style="margin-top: 15px; margin-bottom: 10px;">
                                 <h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin: 0 0 10px 0; font-size: 1rem;">
-                                    ${matchNum} Numbers Match (${draws.length} ${draws.length === 1 ? 'draw' : 'draws'})
+                                    ${matchNum} Numbers Match (${draws.length} ${draws.length === 1 ? 'draw' : 'draws'}) — $${prizeValues[matchNum].toLocaleString()} each
                                 </h4>
                                 <ul style="list-style: none; padding: 0; margin: 0;">
                         `;
@@ -341,7 +379,7 @@
                                     <strong>${draw.game}</strong> (ID: ${draw.id}) - <em>${draw.date}</em><br/>
                                     <span style="color: #555;">Numbers: ${draw.numbers.join(', ')} ${draw.bonus.length ? `[Bonus: ${draw.bonus.join(', ')}]` : ''}</span><br/>
                                     <a href="${draw.url}" target="_blank" style="color: #007bff; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
-                                        Go to Official Page &rarr;
+                                        Go to Official Page to check actual prizes &rarr;
                                     </a>
                                 </li>
                             `;
