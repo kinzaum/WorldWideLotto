@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worldwide Lottery Speech Analyzer .225261250</title>
+    <title>Worldwide Lottery Speech Analyzer</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -132,7 +132,7 @@
 <body>
 
 <div class="container">
-    <h2>Lottery Speech Analyzer</h2>
+    <h2>Lottery Speech Analyzer .522261304</h2>
     
     <div class="settings-row">
         <label for="lang-select">Language:</label>
@@ -359,15 +359,23 @@
                         `;
 
                         draws.forEach(draw => {
-                            // Renderização dos números com estilo individual
-                            const numbersHtml = draw.numbers.map(n => 
-                                `<span style="background: #e0e0e0; padding: 2px 6px; border-radius: 4px; margin: 0 2px; font-weight: bold; color: #333;">${n}</span>`
-                            ).join('');
+                            // Render with Red Highlight if matched
+                            const numbersHtml = draw.numbers.map(n => {
+                                const isMatch = recognizedNumbers.includes(n);
+                                const style = isMatch ? "background: #dc3545; color: white;" : "background: #e0e0e0; color: #333;";
+                                return `<span style="${style} padding: 2px 6px; border-radius: 4px; margin: 0 2px; font-weight: bold;">${n}</span>`;
+                            }).join('');
+
+                            const bonusHtml = draw.bonus.length ? draw.bonus.map(b => {
+                                const isMatch = recognizedNumbers.includes(b);
+                                const style = isMatch ? "background: #dc3545; color: white;" : "background: #fff3cd; color: #856404;";
+                                return `<span style="${style} padding: 2px 6px; border-radius: 4px; border: 1px solid #ffeeba; margin-left: 5px;">${b}</span>`;
+                            }).join('') : '';
 
                             resultsHTML += `
                                 <li style="padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; line-height: 1.4;">
                                     <strong>${draw.game}</strong> (ID: ${draw.id}) - <em>${draw.date}</em><br/>
-                                    <span style="color: #555;">Numbers: ${numbersHtml} ${draw.bonus.length ? `<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; border: 1px solid #ffeeba; margin-left: 5px;">Bonus: ${draw.bonus.join(', ')}</span>` : ''}</span><br/>
+                                    <span style="color: #555;">Numbers: ${numbersHtml} ${bonusHtml}</span><br/>
                                     <a href="${draw.url}" target="_blank" style="color: #007bff; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
                                         Go to Official Page &rarr;
                                     </a>
