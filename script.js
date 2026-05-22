@@ -82,28 +82,66 @@ analyzeBtn.onclick = () => {
 };
 
 const handleYesClick = () => {
-    verifyBox.innerHTML = `<p style="padding: 20px;">Analyzing in cloud...</p>`;
+    verifyBox.innerHTML = `<p style="padding: 20px; font-weight: bold; color: #007bff;">Analyzing worldwide database drawings...</p>`;
+
     fetch(`${API_URL}?numbers=${recognizedNumbers.join(',')}`)
         .then(res => res.json())
-        .then(data => {
-            // Lógica de exibição com destaque vermelho (isMatch)
-            let html = `<h3>Results</h3>`;
-            for (let m = 6; m >= 3; m--) {
-                if (data[m]?.length) {
-                    html += `<h4>${m} Matches</h4><ul>`;
-                    data[m].forEach(draw => {
+        .then(categories => {
+            const totalMatches = Object.values(categories).flat().length;
+            if (totalMatches === 0) {
+                verifyBox.innerHTML = `<p>No matches found.</p><button onclick="location.reload()">Back</button>`;
+                return;
+            }
+
+            let resultsHTML = `
+                <div style="text-align: left; max-height: 500px; overflow-y: auto; padding-right: 10px;">
+                    <h3 style="text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">Search Results (${totalMatches} Matches)</h3>
+            `;
+
+            for (let matchNum = 6; matchNum >= 3; matchNum--) {
+                const draws = categories[matchNum];
+                if (draws && draws.length > 0) {
+                    resultsHTML += `
+                        <div style="margin-top: 15px;">
+                            <h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; font-size: 1rem;">
+                                ${matchNum} Numbers Match (${draws.length} ${draws.length === 1 ? 'draw' : 'draws'})
+                            </h4>
+                            <ul style="list-style: none; padding: 0;">
+                    `;
+
+                    draws.forEach(draw => {
                         const numbersHtml = draw.numbers.map(n => {
                             const isMatch = recognizedNumbers.includes(n);
-                            return `<span style="background:${isMatch ? '#dc3545' : '#e0e0e0'}; color:${isMatch ? '#fff' : '#333'}; padding: 2px 6px; border-radius: 4px; margin: 2px;">${n}</span>`;
+                            return `<span style="background:${isMatch ? '#dc3545' : '#e0e0e0'}; color:${isMatch ? '#fff' : '#333'}; padding: 2px 6px; border-radius: 4px; margin: 0 2px; font-weight: bold;">${n}</span>`;
                         }).join('');
-                        html += `<li>${draw.game} - ${numbersHtml}</li>`;
+
+                        resultsHTML += `
+                            <li style="padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem;">
+                                <strong>${draw.game}</strong> - <em>${draw.date}</em><br/>
+                                <span style="color: #555;">Numbers: ${numbersHtml}</span><br/>
+                                <a href="${draw.url}" target="_blank" style="color: #007bff; font-weight: 600; text-decoration: none;">Go to Official Page &rarr;</a>
+                            </li>
+                        `;
                     });
-                    html += `</ul>`;
+                    resultsHTML += `</ul></div>`;
                 }
             }
-            verifyBox.innerHTML = html + `<button onclick="location.reload()">Close</button>`;
+
+            resultsHTML += `<button onclick="location.reload()" style="width: 100%; margin-top: 20px; padding: 10px; cursor: pointer;">Close Results</button></div>`;
+            verifyBox.innerHTML = resultsHTML;
         });
 };
+
+// Certifique-se de que esta função auxiliar esteja no seu script.js:
+function getTierColor(matches) {
+    switch(matches) {
+        case 6: return '#28a745';
+        case 5: return '#ffc107';
+        case 4: return '#fd7e14';
+        case 3: return '#17a2b8';
+        default: return '#007bff';
+    }
+}
 
 yesBtn.onclick = handleYesClick;
 noBtn.onclick = () => verifyBox.style.display = 'none';
