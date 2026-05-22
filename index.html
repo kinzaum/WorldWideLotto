@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Worldwide Lottery Speech Analyzer</title>
+    <title>Worldwide Lottery Speech Analyzer .225261250</title>
     <style>
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
@@ -63,7 +63,6 @@
             line-height: 1.2;
         }
         
-        /* The sub-label style */
         button span {
             display: block;
             font-size: 0.75rem;
@@ -181,15 +180,12 @@
     const analyzeSub = document.getElementById('analyze-sub');
     const clearSub = document.getElementById('clear-sub');
 
-    // Secure Cloud Architecture Variables
     const API_URL = "https://script.google.com/macros/s/AKfycbwMApjBhxoBJct7tAy6hEHk0PuOtCUIBgozwtWJKRhhtmRotZ7gLcazcEraf8dsyz6srw/exec";
     let recognizedNumbers = [];
     let finalTranscript = ''; 
 
-    // Store a pristine copy of the original confirmation block structure
     const originalVerifyHTML = verifyBox.innerHTML;
 
-    // Helper to restore the original confirmation screen elements
     function resetVerifyBoxToDefault() {
         verifyBox.innerHTML = originalVerifyHTML;
         bindChoiceButtons();
@@ -275,12 +271,10 @@
         const text = outputText.value;
         const matches = text.match(/\d+/g); 
         if (matches && matches.length > 0) {
-            recognizedNumbers = [...new Set(matches.map(Number))]; // Remove duplicates
+            recognizedNumbers = [...new Set(matches.map(Number))];
             
-            // Revert back to the pristine YES/NO question screen
             resetVerifyBoxToDefault();
 
-            // Populate the number display on the restored element
             const currentNumberDisplay = document.getElementById('number-display');
             currentNumberDisplay.innerHTML = "";
             recognizedNumbers.forEach(num => {
@@ -293,19 +287,15 @@
         }
     };
 
-    // SECURE REMOTE SEARCH LOGIC VIA GOOGLE APPS SCRIPT WEB API
     const handleYesClick = () => {
-        // Show a loading UI indicator inside the panel during cloud computation
         verifyBox.innerHTML = `<p style="font-weight: 600; color: #007bff; padding: 20px 0;">Analyzing worldwide database drawings in the cloud...</p>`;
 
-        // Convert the clean local array numbers into a flat parameter string
         const numbersQuery = recognizedNumbers.join(',');
         
         fetch(`${API_URL}?numbers=${numbersQuery}`)
             .then(response => response.json())
             .then(categories => {
                 
-                // Calculate total match count across the payload groups
                 const totalMatches = categories[6].length + categories[5].length + categories[4].length + categories[3].length;
 
                 if (totalMatches === 0) {
@@ -315,17 +305,15 @@
                     return;
                 }
 
-                // Define your static "Lazy Estimate" prize values based on today's averages
                 const prizeValues = {
-                    6: 20000000, // $20 Million
-                    5: 10000,    // $10k
-                    4: 100,      // $100
-                    3: 10        // $10
+                    6: 20000000, 
+                    5: 10000,    
+                    4: 100,      
+                    3: 10        
                 };
 
                 let totalEstimatedGains = 0;
 
-                // Loop through to calculate the total lazy prize money
                 for (let matchNum = 6; matchNum >= 3; matchNum--) {
                     const draws = categories[matchNum];
                     if (draws && draws.length > 0) {
@@ -333,14 +321,12 @@
                     }
                 }
 
-                // Format the total as a clean currency string (e.g., $20,010,430)
                 const formattedGains = new Intl.NumberFormat('en-US', {
                     style: 'currency',
                     currency: 'USD',
                     maximumFractionDigits: 0
                 }).format(totalEstimatedGains);
 
-                // Build out the display panels dynamically from cloud payload
                 let resultsHTML = `
                     <div style="text-align: left; max-height: 450px; overflow-y: auto; padding-right: 10px;">
                         
@@ -356,12 +342,11 @@
                                 ${formattedGains}
                             </span>
                             <p style="font-size: 0.8rem; color: #665114; margin: 0; line-height: 1.4; font-style: italic;">
-                                This amount is a purely modern valuation to estimate potential gains. Because these historical drawings span different countries, time periods, and currencies, actual historical payouts varied significantly. Use the official links below to view actual historical prize declarations.
+                                This amount is a purely modern valuation to estimate potential gains.
                             </p>
                         </div>
                 `;
 
-                // Handle sequential validation blocks from 6 matches down to 3
                 for (let matchNum = 6; matchNum >= 3; matchNum--) {
                     const draws = categories[matchNum];
                     if (draws && draws.length > 0) {
@@ -374,12 +359,17 @@
                         `;
 
                         draws.forEach(draw => {
+                            // Renderização dos números com estilo individual
+                            const numbersHtml = draw.numbers.map(n => 
+                                `<span style="background: #e0e0e0; padding: 2px 6px; border-radius: 4px; margin: 0 2px; font-weight: bold; color: #333;">${n}</span>`
+                            ).join('');
+
                             resultsHTML += `
                                 <li style="padding: 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; line-height: 1.4;">
                                     <strong>${draw.game}</strong> (ID: ${draw.id}) - <em>${draw.date}</em><br/>
-                                    <span style="color: #555;">Numbers: ${draw.numbers.join(', ')} ${draw.bonus.length ? `[Bonus: ${draw.bonus.join(', ')}]` : ''}</span><br/>
+                                    <span style="color: #555;">Numbers: ${numbersHtml} ${draw.bonus.length ? `<span style="background: #fff3cd; padding: 2px 6px; border-radius: 4px; border: 1px solid #ffeeba; margin-left: 5px;">Bonus: ${draw.bonus.join(', ')}</span>` : ''}</span><br/>
                                     <a href="${draw.url}" target="_blank" style="color: #007bff; text-decoration: none; font-size: 0.8rem; font-weight: 600;">
-                                        Go to Official Page to check actual prizes &rarr;
+                                        Go to Official Page &rarr;
                                     </a>
                                 </li>
                             `;
@@ -397,7 +387,6 @@
                     <button id="close-results-btn" style="margin-top: 20px; background-color: #6c757d; width: 100%;">Close Results</button>
                 `;
 
-                // Swap loading screen with the rendered template lists
                 verifyBox.innerHTML = resultsHTML;
 
                 document.getElementById('close-results-btn').onclick = () => {
@@ -412,7 +401,6 @@
             });
     };
 
-    // Helper engine colors for layout levels
     function getTierColor(matches) {
         switch(matches) {
             case 6: return '#28a745'; 
@@ -423,7 +411,6 @@
         }
     }
 
-    // Explicit binding helper to handle component rewrites
     function bindChoiceButtons() {
         const currentYesBtn = document.getElementById('yes-btn');
         const currentNoBtn = document.getElementById('no-btn');
@@ -432,7 +419,6 @@
         if (currentNoBtn) currentNoBtn.onclick = () => { verifyBox.style.display = 'none'; outputText.focus(); };
     }
 
-    // Run initial controller configurations
     bindChoiceButtons();
 
     clearBtn.onclick = () => { 
