@@ -58,7 +58,7 @@ recognition.onresult = (event) => {
     outputText.value = finalTranscript + interim;
 };
 
-// Lógica de Análise
+// Lógica de Análise e Confirmação
 analyzeBtn.onclick = () => {
     const matches = outputText.value.match(/\d+/g);
     if (matches) {
@@ -69,24 +69,58 @@ analyzeBtn.onclick = () => {
     }
 };
 
+// --- FUNÇÃO DE RENDERIZAÇÃO ESTILIZADA COM LAZY ESTIMATE BREAKDOWN ---
 const handleYesClick = () => {
     verifyBox.innerHTML = `<p style="padding: 20px; font-weight: bold; color: #007bff;">Analyzing worldwide database drawings in the cloud...</p>`;
     fetch(`${API_URL}?numbers=${recognizedNumbers.join(',')}`)
         .then(res => res.json())
         .then(categories => {
-            let resultsHTML = `<div style="text-align: left; max-height: 500px; overflow-y: auto; padding-right: 10px;">
-                               <h3 style="text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">Search Results</h3>`;
+            // Definição estática de valores de prêmio para o cálculo
+            const prizeValues = { 6: 20000000, 5: 10000, 4: 100, 3: 10 };
+            let totalEstimatedGains = 0;
+            let totalMatches = 0;
+
+            // Loop para calcular o prêmio estimado total e contagem de acertos
+            for (let m = 6; m >= 3; m--) {
+                const draws = categories[m];
+                if (draws && draws.length > 0) {
+                    totalEstimatedGains += draws.length * prizeValues[m];
+                    totalMatches += draws.length;
+                }
+            }
+
+            // Formatação do prêmio como moeda
+            const formattedGains = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalEstimatedGains);
+
+            // Início da montagem do HTML de resultados
+            let resultsHTML = `
+                <div style="text-align: left; max-height: 500px; overflow-y: auto; padding-right: 10px;">
+                    <h3 style="text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">Search Results (${totalMatches} Matches)</h3>
+                    
+                    <div style="background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center;">
+                        <span style="font-size: 0.85rem; font-weight: bold; color: #856404; text-transform: uppercase; display: block; margin-bottom: 5px;">
+                            ⚠️ Lazy Estimate Breakdown
+                        </span>
+                        <span style="font-size: 1.8rem; font-weight: 800; color: #28a745; display: block; margin-bottom: 8px;">
+                            ${formattedGains}
+                        </span>
+                        <p style="font-size: 0.8rem; color: #665114; margin: 0; line-height: 1.4; font-style: italic;">
+                            This amount is a purely modern valuation to estimate potential gains based on today's averages.
+                        </p>
+                    </div>
+            `;
             
+            // Loop para renderizar as categorias e listas de sorteios
             for (let matchNum = 6; matchNum >= 3; matchNum--) {
                 const draws = categories[matchNum];
                 if (draws && draws.length > 0) {
-                    resultsHTML += `<h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px;">${matchNum} Numbers Match (${draws.length} draws)</h4>`;
+                    resultsHTML += `<h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin-top: 15px;">${matchNum} Numbers Match (${draws.length} draws) — $${prizeValues[matchNum].toLocaleString()} each</h4>`;
                     draws.forEach(draw => {
                         const numbersHtml = draw.numbers.map(n => {
                             const isMatch = recognizedNumbers.includes(n);
                             return `<span style="background:${isMatch ? '#dc3545' : '#e0e0e0'}; color:${isMatch ? '#fff' : '#333'}; padding: 2px 6px; border-radius: 4px; margin: 0 2px; font-weight: bold;">${n}</span>`;
                         }).join('');
-                        resultsHTML += `<li style="padding: 10px; border-bottom: 1px solid #eee;"><strong>${draw.game}</strong><br/>Numbers: ${numbersHtml}<br/><a href="${draw.url}" target="_blank" style="color:#007bff;">Go to Official Page →</a></li>`;
+                        resultsHTML += `<li style="padding: 10px; border-bottom: 1px solid #eee;"><strong>${draw.game}</strong> - ${draw.date}<br/>Numbers: ${numbersHtml}<br/><a href="${draw.url}" target="_blank" style="color:#007bff; font-weight: 600; text-decoration: none;">Go to Official Page →</a></li>`;
                     });
                 }
             }
@@ -97,7 +131,7 @@ const handleYesClick = () => {
 
 function getTierColor(m) { return {6:'#28a745', 5:'#ffc107', 4:'#fd7e14', 3:'#17a2b8'}[m] || '#007bff'; }
 
-// Eventos de clique adicionais
+// Eventos de clique
 yesBtn.onclick = handleYesClick;
 noBtn.onclick = () => verifyBox.style.display = 'none';
 clearBtn.onclick = () => { outputText.value = ''; finalTranscript = ''; verifyBox.style.display = 'none'; };
