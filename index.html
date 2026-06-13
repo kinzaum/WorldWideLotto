@@ -10,25 +10,30 @@
 
 <div class="container">
     <h2 id="title-text">Lottery Speech Analyzer V.522261331</h2>
-    <div class="settings-row">
-        <label for="lang-select">Language:</label>
-        <select id="lang-select">
-            <option value="en-US">English</option>
-            <option value="pt-BR">Portuguese</option>
-            <option value="fr-FR">French</option>
-            <option value="es-ES">Spanish</option>
-            <option value="it-IT">Italian</option>
-            <option value="de-DE">German</option>
-            <option value="ko-KR">Korean</option>
-            <option value="zh-CN">Chinese (Mandarin)</option>
-        </select>
-    </div>
-    <div class="controls">
-        <button id="start-btn">Start<span id="start-sub"></span></button>
-        <button id="analyze-btn">Analyze<span id="analyze-sub"></span></button>
-        <button id="clear-btn">Clear<span id="clear-sub"></span></button>
-    </div>
+    
     <textarea id="output-text" placeholder="Speak your lottery numbers..."></textarea>
+    
+    <div class="controls-row">
+        <div class="lang-selector-wrapper">
+            <select id="lang-select">
+                <option value="en-US">English</option>
+                <option value="pt-BR">Portuguese</option>
+                <option value="fr-FR">French</option>
+                <option value="es-ES">Spanish</option>
+                <option value="it-IT">Italian</option>
+                <option value="de-DE">German</option>
+                <option value="ko-KR">Korean</option>
+                <option value="zh-CN">Chinese (Mandarin)</option>
+            </select>
+        </div>
+        
+        <div class="action-buttons-wrapper">
+            <button id="start-btn">Microphone<span id="start-sub"></span></button>
+            <button id="analyze-btn">Analyze<span id="analyze-sub"></span></button>
+            <button id="clear-btn">Clear<span id="clear-sub"></span></button>
+        </div>
+    </div>
+    
     <div id="verify-box">
         <p id="confirm-text" style="font-weight: 600; color: #0056b3;">I recognized these numbers. Are they correct?</p>
         <div id="number-display"></div>
