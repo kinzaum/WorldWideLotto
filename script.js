@@ -127,6 +127,7 @@ const handleYesClick = () => {
     fetch(`${API_URL}?numbers=${recognizedNumbers.join(',')}`)
         .then(res => res.json())
         .then(categories => {
+
             const prizeMatrix = {
                 6: { withBonus: 20000000, noBonus: 20000000, displayLabel: "$20,000,000" },
                 5: { withBonus: 1000000,  noBonus: 10000,    displayLabel: `$10,000 / $1M ${rText.withBonus}` },
@@ -137,12 +138,21 @@ const handleYesClick = () => {
             let totalEstimatedGains = 0;
             let totalMatches = 0;
 
+            // Loop para calcular o prêmio estimado baseado na presença do bônus por sorteio individual
             for (let m = 6; m >= 3; m--) {
                 const draws = categories[m];
                 if (draws && draws.length > 0) {
                     totalMatches += draws.length;
                     draws.forEach(draw => {
-                        if (draw.hadBonusMatch) {
+                        // --- NEW DIRECT FRONTEND CHECK ---
+                        // Force a true bonus match if ANY number in your spoken list matches ANY number in the draw's bonus array
+                        let explicitBonusMatch = false;
+                        if (draw.bonus && draw.bonus.length > 0) {
+                            explicitBonusMatch = draw.bonus.some(b => recognizedNumbers.includes(Number(b)));
+                        }
+
+                        // Use either the backend flag OR our new explicit frontend check
+                        if (draw.hadBonusMatch || explicitBonusMatch) {
                             totalEstimatedGains += prizeMatrix[m].withBonus;
                         } else {
                             totalEstimatedGains += prizeMatrix[m].noBonus;
@@ -153,14 +163,14 @@ const handleYesClick = () => {
 
             const formattedGains = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalEstimatedGains);
 
-            // Updated HTML to use the dynamic language keys
+// 1. Fixed Header Section (Pinned at the top of the card)
             let resultsHTML = `
-                <div style="text-align: left; max-height: 500px; overflow-y: auto; padding-right: 10px; margin-top: 15px;">
-                    <h3 style="text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+                <div style="text-align: left; margin-top: 15px; display: flex; flex-direction: column; height: 550px;">
+                    <h3 style="text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin: 0 0 15px 0;">
                         ${rText.title} (${totalMatches} ${rText.matches})
                     </h3>
                     
-                    <div style="background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center;">
+                    <div style="background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center; flex-shrink: 0;">
                         <span style="font-size: 0.85rem; font-weight: bold; color: #856404; text-transform: uppercase; display: block; margin-bottom: 5px;">
                             ${rText.estimateTitle}
                         </span>
@@ -171,12 +181,14 @@ const handleYesClick = () => {
                             ${rText.estimateDesc}
                         </p>
                     </div>
+
+                    <div style="flex-grow: 1; overflow-y: auto; padding-right: 10px; margin-bottom: 15px;">
             `;
             
             for (let matchNum = 6; matchNum >= 3; matchNum--) {
                 const draws = categories[matchNum];
                 if (draws && draws.length > 0) {
-                    resultsHTML += `<h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin-top: 15px;">
+                    resultsHTML += `<h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin-top: 15px; position: sticky; top: 0; z-index: 10;">
                         ${matchNum} ${rText.matchLabel} (${draws.length} ${rText.draws}) — ${prizeMatrix[matchNum].displayLabel}
                     </h4><ul style="list-style: none; padding: 0; margin: 0;">`;
                     
@@ -201,9 +213,15 @@ const handleYesClick = () => {
                 }
             }
             
-            resultsHTML += `<button id="close-results-btn" style="width:100%; margin-top:20px; padding:10px; background-color:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer;">${rText.close}</button></div>`;
+            // Close scrollable container and add the action buttons at the absolute bottom
+            resultsHTML += `
+                    </div>
+                    <button id="close-results-btn" style="width:100%; padding:10px; background-color:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer; flex-shrink: 0;">${rText.close}</button>
+                </div>`;
+            
             resultsContainer.innerHTML = resultsHTML;
 
+            // Restores original prompt view cleanly when closed
             document.getElementById('close-results-btn').onclick = () => {
                 resultsContainer.remove();
                 document.getElementById('confirm-text').style.display = 'block';
