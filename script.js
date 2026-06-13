@@ -18,76 +18,36 @@ let finalTranscript = '';
 
 const translations = {
     "en-US": { 
-        start: "Listening", 
-        analyze: "Analyze", 
-        clear: "Clear", 
-        confirm: "I recognized these numbers. Are they correct?", 
-        yes: "YES, Check Lottery", 
-        no: "NO, Edit Text", 
-        placeholder: "Speak your lottery numbers..." 
+        start: "Listening", analyze: "Analyze", clear: "Clear", confirm: "I recognized these numbers. Are they correct?", yes: "YES, Check Lottery", no: "NO, Edit Text", placeholder: "Speak your lottery numbers...",
+        results: { title: "Search Results", matches: "Matches", estimateTitle: "⚠️ Lazy Estimate Breakdown", estimateDesc: "This amount is a purely modern valuation to estimate potential gains based on today's averages.", matchLabel: "Numbers Match", draws: "draws", withBonus: "with Bonus", each: "each", close: "Close Results", loading: "Analyzing worldwide database drawings in the cloud..." }
     },
     "pt-BR": { 
-        start: "Ouvir", 
-        analyze: "Analisar Fala", 
-        clear: "Limpar", 
-        confirm: "Reconheci estes números. Estão corretos?", 
-        yes: "SIM, Verificar Loteria", 
-        no: "NÃO, Editar Texto", 
-        placeholder: "Diga seus números..." 
+        start: "Ouvir", analyze: "Analisar Fala", clear: "Limpar", confirm: "Reconheci estes números. Estão corretos?", yes: "SIM, Verificar Loteria", no: "NÃO, Editar Texto", placeholder: "Diga seus números...",
+        results: { title: "Resultados da Busca", matches: "Acertos", estimateTitle: "⚠️ Estimativa Simples", estimateDesc: "Este valor é uma avaliação moderna para estimar ganhos potenciais com base nas médias atuais.", matchLabel: "Números Acertados", draws: "sorteios", withBonus: "com Bônus", each: "cada", close: "Fechar Resultados", loading: "Analisando sorteios globais no banco de dados..." }
     },
     "fr-FR": { 
-        start: "Écouter", 
-        analyze: "Analyser la parole", 
-        clear: "Effacer", 
-        confirm: "J'ai reconnu ces numéros. Sont-ils corrects ?", 
-        yes: "OUI, Vérifier la loterie", 
-        no: "NON, Modifier le texte", 
-        placeholder: "Dites vos numéros de loterie..." 
+        start: "Écouter", analyze: "Analyser la parole", clear: "Effacer", confirm: "J'ai reconnu ces numéros. Sont-ils corrects ?", yes: "OUI, Vérifier la loterie", no: "NON, Modifier le texte", placeholder: "Dites vos numéros de loterie...",
+        results: { title: "Résultats de Recherche", matches: "Correspondances", estimateTitle: "⚠️ Estimation Sommaire", estimateDesc: "Ce montant est une évaluation moderne pour estimer les gains potentiels basés sur les moyennes actuelles.", matchLabel: "Numéros Correspondants", draws: "tirages", withBonus: "avec Bonus", each: "chacun", close: "Fermer les Résultats", loading: "Analyse des tirages mondiaux dans le cloud..." }
     },
     "es-ES": { 
-        start: "Escuchar", 
-        analyze: "Analizar voz", 
-        clear: "Limpiar", 
-        confirm: "Reconocí estos números. ¿Son correctos?", 
-        yes: "SÍ, Verificar Lotería", 
-        no: "NO, Editar Texto", 
-        placeholder: "Diga sus números de lotería..." 
+        start: "Escuchar", analyze: "Analizar voz", clear: "Limpiar", confirm: "Reconocí estos números. ¿Son correctos?", yes: "SÍ, Verificar Lotería", no: "NO, Editar Texto", placeholder: "Diga sus números de lotería...",
+        results: { title: "Resultados de Búsqueda", matches: "Coincidencias", estimateTitle: "⚠️ Estimación Simple", estimateDesc: "Esta cantidad es una valoración puramente moderna para estimar ganancias potenciales basadas en los promedios de hoy.", matchLabel: "Números Acertados", draws: "sorteos", withBonus: "con Bono", each: "cada uno", close: "Cerrar Resultados", loading: "Analizando sorteos mundiales en la nube..." }
     },
     "it-IT": { 
-        start: "Ascolta", 
-        analyze: "Analizza voce", 
-        clear: "Cancella", 
-        confirm: "Ho riconosciuto questi numeri. Sono corretti?", 
-        yes: "SÌ, Controlla Lotteria", 
-        no: "NO, Modifica Testo", 
-        placeholder: "Pronuncia i tuoi numeri della lotteria..." 
+        start: "Ascolta", analyze: "Analizza voce", clear: "Cancella", confirm: "Ho riconosciuto questi numeri. Sono corretti?", yes: "SÌ, Controlla Lotteria", no: "NO, Modifica Testo", placeholder: "Pronuncia i tuoi numeri della lotteria...",
+        results: { title: "Risultati della Ricerca", matches: "Corrispondenze", estimateTitle: "⚠️ Stima Approssimativa", estimateDesc: "Questo importo è una valutazione puramente moderna per stimare i guadagni potenziali basati sulle medie odierne.", matchLabel: "Numeri Indovinati", draws: "estrazioni", withBonus: "con Bonus", each: "ciascuno", close: "Chiudi Risultati", loading: "Analisi delle estrazioni globali nel cloud..." }
     },
     "de-DE": { 
-        start: "Zuhören", 
-        analyze: "Sprache analysieren", 
-        clear: "Löschen", 
-        confirm: "Ich habe diese Zahlen erkannt. Sind sie korrekt?", 
-        yes: "JA, Lotto prüfen", 
-        no: "NEIN, Text bearbeiten", 
-        placeholder: "Sprechen Sie Ihre Lottozahlen..." 
+        start: "Zuhören", analyze: "Sprache analysieren", clear: "Löschen", confirm: "Ich habe diese Zahlen erkannt. Sind sie korrekt?", yes: "JA, Lotto prüfen", no: "NEIN, Text bearbeiten", placeholder: "Sprechen Sie Ihre Lottozahlen...",
+        results: { title: "Suchergebnisse", matches: "Treffer", estimateTitle: "⚠️ Einfache Schätzung", estimateDesc: "Dieser Betrag ist eine rein moderne Bewertung, um potenzielle Gewinne auf der Grundlage des heutigen Durchschnitts zu schätzen.", matchLabel: "Zahlen Treffer", draws: "Ziehungen", withBonus: "mit Bonus", each: "pro Los", close: "Ergebnisse schließen", loading: "Analysiere weltweite Ziehungen in der Cloud..." }
     },
     "ko-KR": { 
-        start: "듣기", 
-        analyze: "음성 분석", 
-        clear: "지우기", 
-        confirm: "인식된 숫자입니다. 맞습니까?", 
-        yes: "네, 복권 확인하기", 
-        no: "아니요, 텍스트 수정", 
-        placeholder: "복권 번호를 말씀해 주세요..." 
+        start: "듣기", analyze: "음성 분석", clear: "지우기", confirm: "인식된 숫자입니다. 맞습니까?", yes: "네, 복권 확인하기", no: "아니요, 텍스트 수정", placeholder: "복권 번호를 말씀해 주세요...",
+        results: { title: "검색 결과", matches: "개 일치", estimateTitle: "⚠️ 예상 당첨금 분석", estimateDesc: "이 금액은 오늘날의 평균을 기준으로 잠재적 이익을 추정하기 위한 가치 평가입니다.", matchLabel: "개 숫자 일치", draws: "회 추첨", withBonus: "보너스 포함", each: "각", close: "결과 닫기", loading: "클라우드에서 글로벌 추첨 데이터 분석 중..." }
     },
     "zh-CN": { 
-        start: "开始聆听", 
-        analyze: "分析语音", 
-        clear: "清除", 
-        confirm: "我识别了这些数字。正确吗？", 
-        yes: "是的，核对彩票", 
-        no: "不，修改文本", 
-        placeholder: "请说出您的彩票号码..." 
+        start: "开始聆听", analyze: "分析语音", clear: "清除", confirm: "我识别了这些数字。正确吗？", yes: "是的，核对彩票", no: "不，修改文本", placeholder: "请说出您的彩票号码...",
+        results: { title: "搜索结果", matches: "个匹配", estimateTitle: "⚠️ 估算数据细目", estimateDesc: "该金额纯粹是根据当今平均水平估算潜在收益的现代估值。", matchLabel: "个数字 匹配", draws: "次开奖", withBonus: "含 special 号码", each: "每个", close: "关闭结果", loading: "正在云端分析全球开奖数据..." }
     }
 };
 
@@ -136,29 +96,24 @@ analyzeBtn.onclick = () => {
         const disp = document.getElementById('number-display');
         disp.innerHTML = recognizedNumbers.map(n => `<span class="num-tag">${n}</span>`).join('');
         
-        // --- THE RESET FIX ---
-        // 1. Ensure the confirmation text and YES/NO buttons are visible again
         document.getElementById('confirm-text').style.display = 'block';
-        document.querySelector('.choice-btns').style.display = 'flex'; // Uses 'flex' or 'block' depending on your CSS
+        document.querySelector('.choice-btns').style.display = 'flex';
         
-        // 2. Remove any old results left over from a previous search
         const oldResults = document.getElementById('lottery-results-container');
-        if (oldResults) {
-            oldResults.remove();
-        }
+        if (oldResults) { oldResults.remove(); }
         
-        // 3. Display the fresh verification box
         verifyBox.style.display = 'block';
     }
 };
 
-// --- FUNÇÃO DE RENDERIZAÇÃO ESTILIZADA COM LAZY ESTIMATE BREAKDOWN ---
 const handleYesClick = () => {
-    // 1. Hide the confirmation text and choices so they don't look messy, but DON'T delete the whole box
     document.getElementById('confirm-text').style.display = 'none';
     document.querySelector('.choice-btns').style.display = 'none';
     
-    // 2. Safely create or target a clean container for the results inside verifyBox
+    // Grabs the localized text object for the rendering context
+    const currentLang = translations[langSelect.value] || translations["en-US"];
+    const rText = currentLang.results; 
+    
     let resultsContainer = document.getElementById('lottery-results-container');
     if (!resultsContainer) {
         resultsContainer = document.createElement('div');
@@ -166,38 +121,54 @@ const handleYesClick = () => {
         verifyBox.appendChild(resultsContainer);
     }
     
-    resultsContainer.innerHTML = `<p style="padding: 20px; font-weight: bold; color: #007bff; text-align: center;">Analyzing worldwide database drawings in the cloud...</p>`;
+    // Dynamic text for loading state
+    resultsContainer.innerHTML = `<p style="padding: 20px; font-weight: bold; color: #007bff; text-align: center;">${rText.loading}</p>`;
     
     fetch(`${API_URL}?numbers=${recognizedNumbers.join(',')}`)
         .then(res => res.json())
         .then(categories => {
-            const prizeValues = { 6: 20000000, 5: 10000, 4: 100, 3: 10 };
+            const prizeMatrix = {
+                6: { withBonus: 20000000, noBonus: 20000000, displayLabel: "$20,000,000" },
+                5: { withBonus: 1000000,  noBonus: 10000,    displayLabel: `$10,000 / $1M ${rText.withBonus}` },
+                4: { withBonus: 50000,    noBonus: 100,      displayLabel: `$100 / $50,000 ${rText.withBonus}` },
+                3: { withBonus: 100,      noBonus: 10,       displayLabel: `$10 / $100 ${rText.withBonus}` }
+            };
+            
             let totalEstimatedGains = 0;
             let totalMatches = 0;
 
             for (let m = 6; m >= 3; m--) {
                 const draws = categories[m];
                 if (draws && draws.length > 0) {
-                    totalEstimatedGains += draws.length * prizeValues[m];
                     totalMatches += draws.length;
+                    draws.forEach(draw => {
+                        if (draw.hadBonusMatch) {
+                            totalEstimatedGains += prizeMatrix[m].withBonus;
+                        } else {
+                            totalEstimatedGains += prizeMatrix[m].noBonus;
+                        }
+                    });
                 }
             }
 
             const formattedGains = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(totalEstimatedGains);
 
+            // Updated HTML to use the dynamic language keys
             let resultsHTML = `
                 <div style="text-align: left; max-height: 500px; overflow-y: auto; padding-right: 10px; margin-top: 15px;">
-                    <h3 style="text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">Search Results (${totalMatches} Matches)</h3>
+                    <h3 style="text-align: center; border-bottom: 2px solid #ddd; padding-bottom: 10px;">
+                        ${rText.title} (${totalMatches} ${rText.matches})
+                    </h3>
                     
                     <div style="background-color: #fff3cd; border: 1px solid #ffeeba; border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center;">
                         <span style="font-size: 0.85rem; font-weight: bold; color: #856404; text-transform: uppercase; display: block; margin-bottom: 5px;">
-                            ⚠️ Lazy Estimate Breakdown
+                            ${rText.estimateTitle}
                         </span>
                         <span style="font-size: 1.8rem; font-weight: 800; color: #28a745; display: block; margin-bottom: 8px;">
                             ${formattedGains}
                         </span>
                         <p style="font-size: 0.8rem; color: #665114; margin: 0; line-height: 1.4; font-style: italic;">
-                            This amount is a purely modern valuation to estimate potential gains based on today's averages.
+                            ${rText.estimateDesc}
                         </p>
                     </div>
             `;
@@ -205,7 +176,9 @@ const handleYesClick = () => {
             for (let matchNum = 6; matchNum >= 3; matchNum--) {
                 const draws = categories[matchNum];
                 if (draws && draws.length > 0) {
-                    resultsHTML += `<h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin-top: 15px;">${matchNum} Numbers Match (${draws.length} draws) — $${prizeValues[matchNum].toLocaleString()} each</h4><ul style="list-style: none; padding: 0; margin: 0;">`;
+                    resultsHTML += `<h4 style="background-color: ${getTierColor(matchNum)}; color: white; padding: 6px 12px; border-radius: 6px; margin-top: 15px;">
+                        ${matchNum} ${rText.matchLabel} (${draws.length} ${rText.draws}) — ${prizeMatrix[matchNum].displayLabel}
+                    </h4><ul style="list-style: none; padding: 0; margin: 0;">`;
                     
                     draws.forEach(draw => {
                         const numbersHtml = draw.numbers.map(n => {
@@ -228,18 +201,15 @@ const handleYesClick = () => {
                 }
             }
             
-            // Clean close action that resets the elements without forcing a full page download reload
-            resultsHTML += `<button id="close-results-btn" style="width:100%; margin-top:20px; padding:10px; background-color:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer;">Close Results</button></div>`;
+            resultsHTML += `<button id="close-results-btn" style="width:100%; margin-top:20px; padding:10px; background-color:#6c757d; color:white; border:none; border-radius:5px; cursor:pointer;">${rText.close}</button></div>`;
             resultsContainer.innerHTML = resultsHTML;
 
-// Hook up the close button to restore the prompt view cleanly
             document.getElementById('close-results-btn').onclick = () => {
                 resultsContainer.remove();
                 document.getElementById('confirm-text').style.display = 'block';
                 document.querySelector('.choice-btns').style.display = 'flex';
                 verifyBox.style.display = 'none';
                 
-                // Clear the voice transcripts so they don't append to the next run
                 outputText.value = '';
                 finalTranscript = '';
                 recognizedNumbers = []; 
