@@ -20,29 +20,51 @@ body {
 
 h2 { color: #333; margin-bottom: 1.5rem; }
 
-.settings-row {
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
+textarea { 
+    width: 100%; 
+    height: 100px; 
+    padding: 10px; 
+    border: 2px solid #ddd; 
+    border-radius: 10px; 
+    box-sizing: border-box; 
+    margin-bottom: 1rem; 
+    font-size: 1.1rem;
+    line-height: 1.5;
+    resize: vertical;
 }
 
-select {
+/* 🛠️ New Unified Controls Row Layout */
+.controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+    width: 100%;
+}
+
+/* Wraps the language dropdown select */
+.lang-selector-wrapper {
+    flex-shrink: 0;
+}
+
+.lang-selector-wrapper select {
     padding: 8px 12px;
     border-radius: 8px;
     border: 2px solid #ddd;
     font-size: 1rem;
     outline: none;
     cursor: pointer;
+    height: 44px; /* Matches the button layout height scale cleanly */
+    box-sizing: border-box;
 }
 
-.controls { 
-    margin-bottom: 1.5rem; 
-    display: flex; 
-    gap: 10px; 
-    justify-content: center; 
-    flex-wrap: wrap; 
+/* Wraps the 3 main interaction button elements */
+.action-buttons-wrapper {
+    display: flex;
+    gap: 10px;
+    flex-grow: 1;
+    justify-content: flex-end;
 }
 
 button { 
@@ -54,8 +76,10 @@ button {
     color: white; 
     font-weight: 600;
     transition: all 0.2s ease; 
-    min-width: 140px;
+    min-width: 110px;
     line-height: 1.2;
+    height: 44px;
+    box-sizing: border-box;
 }
 
 button span {
@@ -74,19 +98,6 @@ button:hover { opacity: 0.9; transform: translateY(-1px); }
 button.listening { 
     background-color: #dc3545; 
     animation: pulse 1.5s infinite; 
-}
-
-textarea { 
-    width: 100%; 
-    height: 150px; 
-    padding: 15px; 
-    border: 2px solid #ddd; 
-    border-radius: 10px; 
-    box-sizing: border-box; 
-    margin-bottom: 1rem; 
-    font-size: 1.1rem;
-    line-height: 1.5;
-    resize: vertical;
 }
 
 #verify-box { 
@@ -124,4 +135,66 @@ textarea {
     0% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4); } 
     70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); } 
     100% { box-shadow: 0 0 0 0 rgba(220, 53, 69, 0); } 
+}
+
+/* ==========================================================================
+   📱 RESPONSIVE MEDIA QUERIES (Layout control across devices)
+   ========================================================================== */
+
+/* 💻 1. BIG SCREENS (PC/Desktop: Greater than 992px wide) */
+@media (min-width: 993px) {
+    .results-card-layout {
+        height: 680px; /* Max space assigned directly to result rows */
+    }
+}
+
+/* 📑 2. MEDIUM SCREENS (Tablets: Between 577px and 992px wide) */
+@media (min-width: 577px) and (max-width: 992px) {
+    .results-card-layout {
+        height: 560px; /* Balanced mid-size layout view height */
+    }
+}
+
+/* 📱 3. SMALL SCREENS (Cellphones: 576px wide and under) */
+@media (max-width: 576px) {
+    /* Stacks the language selection above buttons when mobile views narrow down */
+    .controls-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .lang-selector-wrapper select {
+        width: 100%;
+    }
+
+    .action-buttons-wrapper {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .action-buttons-wrapper button {
+        flex-grow: 1;
+        min-width: 80px;
+        font-size: 0.9rem;
+        padding: 10px 8px;
+    }
+
+    .results-card-layout {
+        height: 440px; /* Compact scrolling profile for cellular frames */
+    }
+    
+    .container {
+        padding: 1.25rem;
+        width: 98%;
+    }
+}
+
+/* 🎨 Custom Scrollbar Engine (Keeps scroll tracks subtle across all forms) */
+.results-card-layout div::-webkit-scrollbar {
+    width: 6px;
+}
+.results-card-layout div::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
 }
