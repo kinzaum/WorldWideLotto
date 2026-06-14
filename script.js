@@ -163,20 +163,30 @@ const handleYesClick = () => {
             let totalEstimatedGains = 0;
             let totalMatches = 0;
 
+            // Locate this loop inside your handleYesClick function:
             for (let m = 6; m >= 3; m--) {
                 const draws = categories[m];
                 if (draws && draws.length > 0) {
                     totalMatches += draws.length;
                     draws.forEach(draw => {
-                        let explicitBonusMatch = false;
-                        if (draw.bonus && draw.bonus.length > 0) {
-                            explicitBonusMatch = draw.bonus.some(b => recognizedNumbers.includes(Number(b)));
-                        }
-
-                        if (draw.hadBonusMatch || explicitBonusMatch) {
-                            totalEstimatedGains += prizeMatrix[m].withBonus;
+                        // 1. Check if this is a classic 5-number max game (like Italian Lotto)
+                        const isClassicFiveGame = draw.numbers.length === 5 && (draw.game.toLowerCase().includes("lotto") || draw.game.toLowerCase().includes("italia"));
+                        
+                        if (m === 5 && isClassicFiveGame) {
+                            // If they matched 5 numbers out of a 5-number game, it's a Jackpot!
+                            totalEstimatedGains += 6000000; // Fixed Cinquina payout multiplier
                         } else {
-                            totalEstimatedGains += prizeMatrix[m].noBonus;
+                            // 2. Otherwise, run your fallback standard matrix logic safely
+                            let explicitBonusMatch = false;
+                            if (draw.bonus && draw.bonus.length > 0) {
+                                explicitBonusMatch = draw.bonus.some(b => recognizedNumbers.includes(Number(b)));
+                            }
+
+                            if (draw.hadBonusMatch || explicitBonusMatch) {
+                                totalEstimatedGains += prizeMatrix[m].withBonus;
+                            } else {
+                                totalEstimatedGains += prizeMatrix[m].noBonus;
+                            }
                         }
                     });
                 }
